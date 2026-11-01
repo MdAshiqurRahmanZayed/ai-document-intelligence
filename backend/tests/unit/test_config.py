@@ -52,3 +52,29 @@ def test_environment_overrides_env_file(valid_env: pytest.MonkeyPatch, tmp_path:
     settings = Settings(_env_file=env_file)
     assert settings.s3_bucket == "from-env"
     assert settings.redis_url.get_secret_value() == "redis://localhost:6379/0"
+
+
+@pytest.mark.parametrize(
+    ("name", "attr", "default"),
+    [
+        ("APP_ENV", "app_env", "local"),
+        ("LOG_LEVEL", "log_level", "INFO"),
+        ("WEB_ORIGIN", "web_origin", "http://localhost:3000"),
+        ("S3_BUCKET", "s3_bucket", "documents"),
+        ("S3_REGION", "s3_region", "us-east-1"),
+    ],
+)
+def test_default_used_when_variable_unset(
+    name: str,
+    attr: str,
+    default: str,
+    valid_env: pytest.MonkeyPatch,
+) -> None:
+    valid_env.delenv(name, raising=False)
+    settings = Settings(_env_file=None)
+    assert getattr(settings, attr) == default
+
+
+def test_default_is_overridden_by_environment(valid_env: pytest.MonkeyPatch) -> None:
+    valid_env.setenv("LOG_LEVEL", "DEBUG")
+    assert Settings(_env_file=None).log_level == "DEBUG"
