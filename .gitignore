@@ -1,0 +1,68 @@
+# ---- Environment / secrets ----
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# ---- OS / editors ----
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+
+# ---- Claude Code (personal) ----
+.claude/settings.local.json
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.python-version
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+dist/
+build/
+
+# ---- Node / Next.js ----
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.turbo/
+.vercel/
+
+# ---- Frontend tests ----
+frontend/coverage/
+frontend/test-results/
+frontend/playwright-report/
+frontend/blob-report/
+
+# ---- Local data / docker volumes ----
+data/
+storage_data/
+postgres_data/
+redis_data/
+*.log
+tmp/
+
+# ---- Evaluation ----
+# Raw dataset documents can be large / licensed (SROIE, CORD) — fetch via script.
+eval/dataset/documents/
+# Keep ground truth + generated reports committed.
+!eval/dataset/ground_truth/
+eval/.cache/

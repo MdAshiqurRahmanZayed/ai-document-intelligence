@@ -1,0 +1,20 @@
+schema: spec-driven
+
+context: |
+  Document intelligence system: ingest PDF/image/spreadsheet invoices, extract
+  text (native, OCR), extract structured invoice data with an LLM, validate,
+  and expose via REST API + review UI + search.
+  Stack: Python 3.12 FastAPI, Celery + Redis, PostgreSQL + pgvector, SeaweedFS (S3 API),
+  Gemini via LangChain, Next.js + Tailwind v4.
+  Constraints:
+  - Money is Decimal, never float. Dates ISO 8601. Currency ISO 4217.
+  - Extraction never invents values: fields are optional and null when absent.
+  - Tests never call the real LLM; use fakes or recorded responses.
+  - No secrets in the repo; configuration comes from the environment.
+  - Docker networks and volumes are named with the ai-document-intelligence- prefix.
+
+rules:
+  proposal:
+    - State what is out of scope.
+  tasks:
+    - Each task includes tests where behavior is added, and a way to verify it.
