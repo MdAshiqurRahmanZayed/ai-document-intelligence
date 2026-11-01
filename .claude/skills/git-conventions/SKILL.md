@@ -27,17 +27,16 @@ the tracking role instead (see §6).
 
 ## 0. Hard rules
 
-1. AI-assisted development is disclosed in `AI_DISCLOSURE.md`.
-2. Never commit secrets: check staged files for `.env`, keys, tokens before
+1. Never commit secrets: check staged files for `.env`, keys, tokens before
    committing. `.env.example` is fine.
-3. Never `--no-verify`, never force-push, never amend a pushed commit
+2. Never `--no-verify`, never force-push, never amend a pushed commit
    unless the user explicitly asks.
-4. **Never push by default.** Commit locally only. Run `git push` only when
+3. **Never push by default.** Commit locally only. Run `git push` only when
    the user explicitly asks for a push in that message; even then, first
    state remote, branch, and the commits to be pushed
    (`git log @{u}..HEAD --oneline`, or all commits on a new branch) and wait
    for confirmation. Approval for one push does not carry over to the next.
-5. **Protected branches: `main`, `development`, `production`.** Before
+4. **Protected branches: `main`, `development`, `production`.** Before
    committing directly on one of them, merging into one, rebasing one, or
    cherry-picking onto one: stop, tell the user which branch and what
    operation, and wait for explicit approval. Check the current branch with

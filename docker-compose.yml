@@ -1,0 +1,182 @@
+name: ai-document-intelligence
+
+# api, worker and storage-init share one image; only api builds it (avoids parallel builds of one tag).
+x-backend: &backend
+  image: ai-document-intelligence-backend:local
+  env_file: .env
+  # Containers reach each other by service name; .env holds localhost URLs for host tools.
+  environment:
+    DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+    REDIS_URL: redis://redis:6379/0
+    S3_ENDPOINT_URL: http://storage:8333
+  networks: [app]
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-15432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks: [app]
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks: [app]
+
+  storage:
+    image: chrislusf/seaweedfs:4.50
+    # Admin credentials come from the standard AWS variables.
+    environment:
+      AWS_ACCESS_KEY_ID: ${S3_ACCESS_KEY}
+      AWS_SECRET_ACCESS_KEY: ${S3_SECRET_KEY}
+    # -ip.bind lets the in-container healthcheck reach localhost.
+    command: server -dir=/data -s3 -ip.bind=0.0.0.0
+    volumes:
+      - storage-data:/data
+    ports:
+      - "${S3_PORT:-8333}:8333"
+    healthcheck:
+      # An unauthenticated request gets 403, which still proves the S3 port is up.
+      test: ["CMD-SHELL", "wget -S -q -O /dev/null http://localhost:8333/ 2>&1 | grep -q HTTP/"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks: [app]
+
+  storage-init:
+    <<: *backend
+    restart: "no"
+    depends_on:
+      storage:
+        condition: service_healthy
+    command:
+      - python
+      - -c
+      - |
+        import os
+        import boto3
+        from botocore.config import Config
+        from botocore.exceptions import ClientError
+
+        s3 = boto3.client(
+            "s3",
+            endpoint_url=os.environ["S3_ENDPOINT_URL"],
+            aws_access_key_id=os.environ["S3_ACCESS_KEY"],
+            aws_secret_access_key=os.environ["S3_SECRET_KEY"],
+            region_name=os.environ["S3_REGION"],
+            config=Config(s3={"addressing_style": "path"}),
+        )
+        bucket = os.environ["S3_BUCKET"]
+        try:
+            s3.head_bucket(Bucket=bucket)
+        except ClientError:
+            s3.create_bucket(Bucket=bucket)
+        print(f"bucket ready: {bucket}")
+
+  api:
+    <<: *backend
+    build: ./backend
+    ports:
+      - "${API_PORT:-8000}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      storage-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - import urllib.request; urllib.request.urlopen('http://localhost:8000/healthz', timeout=3)
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  worker:
+    <<: *backend
+    command: celery -A app.workers.celery_app worker -Q ingest,ocr,llm,embed
+    depends_on:
+      redis:
+        condition: service_healthy
+      storage-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A app.workers.celery_app inspect ping -d celery@$$HOSTNAME -t 5"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+
+  web:
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+    image: ai-document-intelligence-web:local
+    ports:
+      - "${WEB_PORT:-3000}:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://localhost:3000').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks: [app]
+
+  # Throwaway test containers: `make test` / `make lint` (profile "test", never started by up/dev).
+  backend-test:
+    profiles: [test]
+    build:
+      context: ./backend
+      target: test
+    image: ai-document-intelligence-backend-test:local
+    networks: [app]
+
+  web-test:
+    profiles: [test]
+    build:
+      context: ./frontend
+      target: build
+    image: ai-document-intelligence-web-test:local
+    command: npm test
+    networks: [app]
+
+networks:
+  app:
+    name: ai-document-intelligence-network
+
+volumes:
+  postgres-data:
+    name: ai-document-intelligence-postgres-data
+  redis-data:
+    name: ai-document-intelligence-redis-data
+  storage-data:
+    name: ai-document-intelligence-storage-data
