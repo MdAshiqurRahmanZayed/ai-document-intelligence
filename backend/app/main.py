@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.ext.asyncio import create_async_engine
 
 from app.api import health
-from app.api.v1 import documents
+from app.api.v1 import cross_verify, documents
 from app.core.config import Settings, get_settings
 from app.core.logging import RequestLogMiddleware, configure_logging, log
 from app.db.session import make_session_factory
@@ -50,6 +50,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.add_middleware(RequestLogMiddleware)
     app.include_router(health.router)
     app.include_router(documents.router)
+    app.include_router(cross_verify.router)
 
     log.info("startup", settings=settings.model_dump(mode="json"))
     return app

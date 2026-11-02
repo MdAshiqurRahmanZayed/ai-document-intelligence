@@ -1,40 +1,12 @@
 import uuid
-from collections.abc import AsyncIterator
-from dataclasses import dataclass
 
-import pytest
-from fastapi import FastAPI
-from httpx import ASGITransport, AsyncClient
 from sqlalchemy import func, select
 
-from app.core.config import Settings
 from app.db.models import Document
-from app.main import create_app
 from tests import samples
-from tests.fakes import FakeStorage, RecordingEnqueue
+from tests.helpers import Api
 
 URL = "/api/v1/documents"
-
-
-@dataclass
-class Api:
-    client: AsyncClient
-    storage: FakeStorage
-    enqueue: RecordingEnqueue
-    settings: Settings
-    app: FastAPI
-
-
-@pytest.fixture
-async def api(db: str) -> AsyncIterator[Api]:
-    settings = Settings()
-    app = create_app(settings)
-    storage, enqueue = FakeStorage(), RecordingEnqueue()
-    app.state.storage = storage
-    app.state.enqueue = enqueue
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-        yield Api(client, storage, enqueue, settings, app)
-    await app.state.engine.dispose()
 
 
 def part(name: str, data: bytes) -> tuple[str, tuple[str, bytes]]:

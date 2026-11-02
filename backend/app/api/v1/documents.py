@@ -6,7 +6,9 @@ from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.schemas.documents import DocumentOut, UploadItem, UploadResponse
+from app.schemas.results import ResultOut, build_result
 from app.services.documents import get_document, ingest_upload
+from app.services.results import load_results
 
 router = APIRouter(prefix="/api/v1/documents", tags=["documents"])
 
@@ -58,3 +60,15 @@ async def read_document(
     if document is None:
         raise HTTPException(status_code=404, detail="Document not found")
     return DocumentOut.model_validate(document)
+
+
+@router.get("/{document_id}/result", response_model=ResultOut)
+async def read_result(
+    document_id: uuid.UUID,
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> ResultOut:
+    document = await get_document(session, document_id)
+    if document is None:
+        raise HTTPException(status_code=404, detail="Document not found")
+    extractions, issues = await load_results(session, document_id)
+    return build_result(document, extractions, issues)

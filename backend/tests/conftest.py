@@ -5,12 +5,15 @@ from collections.abc import AsyncIterator, Iterator
 from pathlib import Path
 
 import pytest
+from httpx import ASGITransport, AsyncClient
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import NullPool
 
-from app.core.config import get_settings
-from tests.helpers import run_sync
+from app.core.config import Settings, get_settings
+from app.main import create_app
+from tests.fakes import FakeStorage, RecordingEnqueue
+from tests.helpers import Api, run_sync
 
 VALID_ENV = {
     "APP_ENV": "test",
@@ -82,3 +85,15 @@ async def session(db: str) -> AsyncIterator[AsyncSession]:
     async with async_sessionmaker(engine, expire_on_commit=False)() as session:
         yield session
     await engine.dispose()
+
+
+@pytest.fixture
+async def api(db: str) -> AsyncIterator[Api]:
+    settings = Settings()
+    app = create_app(settings)
+    storage, enqueue = FakeStorage(), RecordingEnqueue()
+    app.state.storage = storage
+    app.state.enqueue = enqueue
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        yield Api(client, storage, enqueue, settings, app)
+    await app.state.engine.dispose()
