@@ -28,6 +28,22 @@ class Settings(BaseSettings):
     s3_region: str = Field(default="us-east-1", validation_alias="S3_REGION")
 
     google_api_key: SecretStr | None = Field(default=None, validation_alias="GOOGLE_API_KEY")
+    # Extraction runs only when a key is set. The model IDs are placeholders to verify against
+    # the provider's current list; changing them needs no code change.
+    gemini_extraction_model: str = Field(
+        default="gemini-2.5-flash", validation_alias="GEMINI_EXTRACTION_MODEL"
+    )
+    gemini_fallback_model: str = Field(
+        default="gemini-2.5-pro", validation_alias="GEMINI_FALLBACK_MODEL"
+    )
+    # Pages of text sent to the model in one call.
+    extraction_pages_per_call: int = Field(
+        default=6, ge=1, validation_alias="EXTRACTION_PAGES_PER_CALL"
+    )
+    # Fields the model is less sure of than this are flagged for review.
+    low_confidence_threshold: float = Field(
+        default=0.5, ge=0, le=1, validation_alias="LOW_CONFIDENCE_THRESHOLD"
+    )
 
 
 def load_settings() -> Settings:

@@ -14,6 +14,7 @@ RUN uv sync --frozen
 COPY alembic.ini ./
 COPY alembic ./alembic
 COPY app ./app
+COPY prompts ./prompts
 COPY tests ./tests
 ENV PATH="/app/.venv/bin:$PATH"
 CMD ["pytest"]
@@ -29,6 +30,7 @@ COPY --from=build /app/.venv /app/.venv
 COPY alembic.ini ./
 COPY alembic ./alembic
 COPY app ./app
+COPY prompts ./prompts
 ENV PATH="/app/.venv/bin:$PATH" PYTHONUNBUFFERED=1
 USER app
 EXPOSE 8000

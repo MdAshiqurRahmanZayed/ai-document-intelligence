@@ -94,3 +94,42 @@ def test_ocr_concurrency_of_zero_is_rejected(valid_env: pytest.MonkeyPatch) -> N
     valid_env.setenv("OCR_CONCURRENCY", "0")
     with pytest.raises(ValidationError):
         Settings(_env_file=None)
+
+
+@pytest.mark.parametrize(
+    ("name", "attr", "default", "override", "expected"),
+    [
+        ("GEMINI_EXTRACTION_MODEL", "gemini_extraction_model", "gemini-2.5-flash", "m1", "m1"),
+        ("GEMINI_FALLBACK_MODEL", "gemini_fallback_model", "gemini-2.5-pro", "m2", "m2"),
+        ("EXTRACTION_PAGES_PER_CALL", "extraction_pages_per_call", 6, "3", 3),
+        ("LOW_CONFIDENCE_THRESHOLD", "low_confidence_threshold", 0.5, "0.8", 0.8),
+    ],
+)
+def test_extraction_settings_have_defaults_and_can_be_overridden(
+    valid_env: pytest.MonkeyPatch,
+    name: str,
+    attr: str,
+    default: object,
+    override: str,
+    expected: object,
+) -> None:
+    valid_env.delenv(name, raising=False)
+    assert getattr(Settings(_env_file=None), attr) == default
+    valid_env.setenv(name, override)
+    assert getattr(Settings(_env_file=None), attr) == expected
+
+
+@pytest.mark.parametrize(
+    ("name", "value"),
+    [
+        ("EXTRACTION_PAGES_PER_CALL", "0"),
+        ("LOW_CONFIDENCE_THRESHOLD", "1.5"),
+        ("LOW_CONFIDENCE_THRESHOLD", "-0.1"),
+    ],
+)
+def test_invalid_extraction_settings_are_rejected(
+    valid_env: pytest.MonkeyPatch, name: str, value: str
+) -> None:
+    valid_env.setenv(name, value)
+    with pytest.raises(ValidationError):
+        Settings(_env_file=None)
