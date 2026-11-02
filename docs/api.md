@@ -125,10 +125,12 @@ curl localhost:8000/api/v1/documents/3f2a…
 | `pdf_encrypted` | The PDF needs a password. Not retried |
 | `pdf_empty` | The PDF opened but has no pages. Not retried |
 | `image_corrupt` | The image is damaged, truncated or too large to decode safely. Not retried |
+| `spreadsheet_corrupt` | The XLSX, XLS or CSV is damaged and cannot be read. Not retried |
+| `spreadsheet_empty` | The spreadsheet opens but no sheet holds any data. Not retried |
 | `ingest_failed` | The ingest job failed on every attempt (first try plus 3 retries); `error_message` holds the exception type |
 | `ocr_failed` | The OCR job failed on every attempt (first try plus 3 retries); `error_message` holds the exception type |
 
-`page_count` is filled for PDFs and images (one per frame; a multi-frame TIFF has several) once the file has been opened, so it is already set while the pages are still being read. It stays `null` for other file types.
+`page_count` is filled once the file has been opened, so it is already set while the pages are still being read: one per PDF page, one per image frame (a multi-frame TIFF has several), and for a spreadsheet the number of text pages (each sheet with data gives one page per 100 data rows). A spreadsheet document goes straight to `COMPLETED` after the ingest job: it never has an `ocr` stage.
 
 ### Limits
 

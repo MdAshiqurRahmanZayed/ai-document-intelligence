@@ -12,9 +12,11 @@ from app.db.models import Document, DocumentStatus, ProcessingEvent
 from app.db.session import worker_session
 from app.pipeline.image import ImageError
 from app.pipeline.pdf import PdfError
+from app.pipeline.spreadsheet import SpreadsheetError
 from app.services.image_ingest import ingest_image
 from app.services.ocr_ingest import has_scanned_pages, ocr_pages
 from app.services.pdf_ingest import ingest_pdf
+from app.services.spreadsheet_ingest import ingest_spreadsheet
 from app.services.storage import Storage, build_s3_storage
 from app.workers.celery_app import celery_app
 
@@ -28,6 +30,8 @@ _UNUSABLE_MESSAGES = {
     "pdf_encrypted": "The PDF is password-protected.",
     "pdf_empty": "The PDF has no pages.",
     "image_corrupt": "The image is damaged and could not be read.",
+    "spreadsheet_corrupt": "The spreadsheet is damaged and could not be read.",
+    "spreadsheet_empty": "The spreadsheet has no data.",
 }
 
 # Both jobs retry the same way: a few attempts with growing pauses.
@@ -41,14 +45,14 @@ _RETRY = {
 
 
 async def run_pipeline(session: AsyncSession, storage: Storage, document: Document) -> bool:
-    """Dispatch by document type. Returns True when pages still need OCR.
-
-    Later changes (spreadsheets) add their branches here.
-    """
+    """Dispatch by document type. Returns True when pages still need OCR."""
     if document.source_type == "pdf":
         await ingest_pdf(session, storage, document)
     elif document.source_type == "image":
         await ingest_image(session, storage, document)
+    elif document.source_type == "spreadsheet":
+        await ingest_spreadsheet(session, storage, document)
+        return False  # spreadsheet pages are text from the start, so nothing to OCR
     else:
         return False
     return await has_scanned_pages(session, document)
@@ -103,7 +107,7 @@ async def _run(document_id: uuid.UUID, attempt: int) -> None:
 
         try:
             ocr_pending = await run_pipeline(session, build_s3_storage(get_settings()), document)
-        except (PdfError, ImageError) as exc:
+        except (PdfError, ImageError, SpreadsheetError) as exc:
             # The file itself is unusable, so retrying cannot help: fail now and do not re-raise
             # (re-raising would hand it to Celery's retry policy).
             log.warning("file_unusable", document_id=str(document_id), code=exc.code)
