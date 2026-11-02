@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import pytest
+from pydantic import ValidationError
 
 from app.core.config import Settings, load_settings
 
@@ -78,3 +79,18 @@ def test_default_used_when_variable_unset(
 def test_default_is_overridden_by_environment(valid_env: pytest.MonkeyPatch) -> None:
     valid_env.setenv("LOG_LEVEL", "DEBUG")
     assert Settings(_env_file=None).log_level == "DEBUG"
+
+
+def test_ocr_concurrency_defaults_to_four_and_can_be_overridden(
+    valid_env: pytest.MonkeyPatch,
+) -> None:
+    valid_env.delenv("OCR_CONCURRENCY", raising=False)
+    assert Settings(_env_file=None).ocr_concurrency == 4
+    valid_env.setenv("OCR_CONCURRENCY", "2")
+    assert Settings(_env_file=None).ocr_concurrency == 2
+
+
+def test_ocr_concurrency_of_zero_is_rejected(valid_env: pytest.MonkeyPatch) -> None:
+    valid_env.setenv("OCR_CONCURRENCY", "0")
+    with pytest.raises(ValidationError):
+        Settings(_env_file=None)

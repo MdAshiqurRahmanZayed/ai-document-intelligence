@@ -1,5 +1,6 @@
 """Reads the text of one page image with Tesseract. Pure: no database, storage or web imports."""
 
+import os
 from dataclasses import dataclass
 
 import cv2
@@ -8,6 +9,11 @@ import pytesseract
 from pytesseract import Output
 
 from app.pipeline.preprocess import Preprocessor
+
+# Speed comes from reading several pages at once, so each Tesseract call and each OpenCV step
+# stays on one thread; otherwise every call would grab every core and they would fight.
+os.environ.setdefault("OMP_THREAD_LIMIT", "1")
+cv2.setNumThreads(1)
 
 
 @dataclass

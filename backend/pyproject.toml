@@ -19,6 +19,9 @@ dependencies = [
     "pytesseract>=0.3.13",
     "opencv-python-headless>=5.0.0.93",
     "numpy>=2.5.4",
+    "openpyxl>=3.1.5",
+    "xlrd>=2.0.1",
+    "charset-normalizer>=3.4.0",
 ]
 
 [dependency-groups]
@@ -29,8 +32,8 @@ dev = [
     "ruff",
     "mypy",
     "boto3-stubs[s3]",
-    "openpyxl>=3.1.5",
     "reportlab>=5.1.0",
+    "xlwt>=1.3.0",
 ]
 
 [tool.ruff]
@@ -49,9 +52,12 @@ plugins = ["pydantic.mypy"]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 testpaths = ["tests"]
+# Slow benchmarks only run on request: `make bench` (pytest -m slow).
+addopts = '-m "not slow"'
+markers = ["slow: large-document benchmarks, run with make bench"]
 
 [[tool.mypy.overrides]]
-module = ["celery.*", "kombu.*", "openpyxl.*", "pypdfium2.*", "reportlab.*", "pytesseract.*"]
+module = ["celery.*", "kombu.*", "openpyxl.*", "pypdfium2.*", "reportlab.*", "pytesseract.*", "xlrd.*", "xlwt.*"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]

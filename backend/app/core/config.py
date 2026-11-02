@@ -15,6 +15,8 @@ class Settings(BaseSettings):
         default=2, gt=0, validation_alias="READINESS_TIMEOUT_SECONDS"
     )
     max_upload_mb: int = Field(default=100, gt=0, validation_alias="MAX_UPLOAD_MB")
+    # Pages of one document read at the same time by the OCR job.
+    ocr_concurrency: int = Field(default=4, ge=1, validation_alias="OCR_CONCURRENCY")
 
     database_url: SecretStr = Field(validation_alias="DATABASE_URL")
     redis_url: SecretStr = Field(validation_alias="REDIS_URL")

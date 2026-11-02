@@ -1,7 +1,13 @@
+import threading
+import time
+
+import pytest
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import Document, Page
+from app.pipeline.ocr import OcrResult
+from app.services import ocr_ingest
 from app.services.ocr_ingest import ocr_pages
 from tests import image_samples as samples
 from tests.fakes import FakeStorage
@@ -85,3 +91,84 @@ async def test_blank_page_is_saved_empty_without_failing(session: AsyncSession) 
 
     (page,) = await pages_of(session, document)
     assert (page.text, page.method, page.ocr_confidence) == ("", "ocr", None)
+
+
+class ReadLog:
+    """Counts how many reads overlap in time; fails the read of the page named in `fail_on`."""
+
+    def __init__(self, fail_on: bytes | None = None) -> None:
+        self.active = self.peak = 0
+        self.fail_on = fail_on
+        self._lock = threading.Lock()
+
+    def read(self, png: bytes) -> OcrResult:
+        with self._lock:
+            self.active += 1
+            self.peak = max(self.peak, self.active)
+        try:
+            time.sleep(0.05)  # long enough for reads to overlap
+            if png == self.fail_on:
+                raise RuntimeError("engine glitch")
+            return OcrResult(f"text of {png.decode()}", 0.9)
+        finally:
+            with self._lock:
+                self.active -= 1
+
+
+def use_stub_engine(monkeypatch: pytest.MonkeyPatch, log: ReadLog) -> None:
+    class StubEngine:
+        def read(self, png: bytes) -> OcrResult:
+            return log.read(png)
+
+    monkeypatch.setattr(ocr_ingest, "OcrEngine", StubEngine)
+
+
+async def twelve_scanned_pages(session: AsyncSession, storage: FakeStorage) -> Document:
+    pages = [Page(page_no=n, method="scanned") for n in range(1, 13)]
+    images = {n: f"page-{n}".encode() for n in range(1, 13)}
+    return await document_with_pages(session, storage, pages, images)
+
+
+async def test_reads_overlap_but_never_exceed_the_limit(
+    session: AsyncSession, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    log = ReadLog()
+    use_stub_engine(monkeypatch, log)
+    storage = FakeStorage()
+    document = await twelve_scanned_pages(session, storage)
+
+    await ocr_pages(session, storage, document, concurrency=4)
+
+    assert 1 < log.peak <= 4
+    assert {p.method for p in await pages_of(session, document)} == {"ocr"}
+
+
+async def test_a_limit_of_one_gives_the_same_result(
+    session: AsyncSession, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    use_stub_engine(monkeypatch, ReadLog())
+    results = []
+    for limit in (1, 4):
+        storage = FakeStorage()
+        document = await twelve_scanned_pages(session, storage)
+        await ocr_pages(session, storage, document, concurrency=limit)
+        results.append(
+            [(p.text, p.method, p.ocr_confidence) for p in await pages_of(session, document)]
+        )
+
+    assert results[0] == results[1]
+    assert results[0][0] == ("text of page-1", "ocr", 0.9)
+
+
+async def test_a_failed_read_keeps_the_batches_already_saved(
+    session: AsyncSession, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    use_stub_engine(monkeypatch, ReadLog(fail_on=b"page-12"))  # page 12 is in the second batch
+    storage = FakeStorage()
+    document = await twelve_scanned_pages(session, storage)
+
+    with pytest.raises(RuntimeError):
+        await ocr_pages(session, storage, document, concurrency=4)
+
+    methods = [p.method for p in await pages_of(session, document)]
+    assert methods == ["ocr"] * 10 + ["scanned"] * 2

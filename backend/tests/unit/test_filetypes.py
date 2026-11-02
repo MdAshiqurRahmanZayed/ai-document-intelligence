@@ -40,6 +40,12 @@ def test_binary_signature_wins_over_filename() -> None:
     assert detected.extension == ".png"
 
 
+def test_pdf_named_jpg_is_still_a_pdf() -> None:
+    detected = detect(samples.pdf(), "scan.jpg")
+    assert detected is not None
+    assert (detected.mime, detected.extension) == ("application/pdf", ".pdf")
+
+
 @pytest.mark.parametrize(
     ("data", "filename"),
     [

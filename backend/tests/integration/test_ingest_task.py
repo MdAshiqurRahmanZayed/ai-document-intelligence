@@ -10,8 +10,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.models import Document, DocumentStatus, Page, ProcessingEvent
 from tests import image_samples as images
 from tests import pdf_samples as samples
+from tests import spreadsheet_samples as sheets
 from tests.fakes import FakeStorage
-from tests.helpers import make_document, with_session
+from tests.helpers import make_document, run_sync, with_session
 
 # These tests are synchronous on purpose: the task calls asyncio.run() itself, which cannot
 # run inside pytest-asyncio's already-running loop.
@@ -68,8 +69,7 @@ def ocr(ingest: Task, ocr_queue: list[str], monkeypatch: pytest.MonkeyPatch) -> 
 def queued_document(
     db: str, storage: FakeStorage | None = None, content: bytes | None = None, **fields: Any
 ) -> uuid.UUID:
-    # Default is a spreadsheet: the pipeline does nothing for it yet, so these tests exercise
-    # the task machinery without needing a stored file.
+    # No stored file by default: tests that use a bare document replace `run_pipeline`.
     fields.setdefault("source_type", "spreadsheet")
     fields.setdefault("status", DocumentStatus.QUEUED)
     document = make_document(**fields)
@@ -100,7 +100,13 @@ def load(db: str, document_id: uuid.UUID) -> tuple[Document, list[ProcessingEven
     return with_session(db, read)
 
 
-def test_successful_run_completes_and_records_events(db: str, ingest: Task) -> None:
+def test_successful_run_completes_and_records_events(
+    db: str, ingest: Task, pipeline: Callable[[Any], None]
+) -> None:
+    async def nothing_to_do(session: AsyncSession, storage: Any, document: Document) -> bool:
+        return False
+
+    pipeline(nothing_to_do)
     document_id = queued_document(db)
     ingest.apply(args=[str(document_id)])
 
@@ -228,12 +234,49 @@ def test_pdf_without_pages_fails_as_empty(
     assert [e.attempt for e in events] == [1, 1]
 
 
-def test_non_pdf_document_gets_no_pages(db: str, ingest: Task, storage: FakeStorage) -> None:
-    document_id = queued_document(db)  # spreadsheet
+XLSX_MIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+
+
+def spreadsheet_document(db: str, storage: FakeStorage, content: bytes) -> uuid.UUID:
+    return queued_document(
+        db, storage, content, source_type="spreadsheet", mime=XLSX_MIME, filename="inv.xlsx"
+    )
+
+
+def test_spreadsheet_is_completed_with_pages_and_no_ocr_job(
+    db: str, ingest: Task, ocr: Task, ocr_queue: list[str], storage: FakeStorage
+) -> None:
+    document_id = spreadsheet_document(db, storage, sheets.multi_sheet_xlsx())
+
     ingest.apply(args=[str(document_id)])
 
-    document, _ = load(db, document_id)
+    document, events = load(db, document_id)
     assert document.status == DocumentStatus.COMPLETED
+    assert [p.method for p in page_rows(db, document_id)] == ["native", "native"]
+    assert [(e.stage, e.status) for e in events] == [("ingest", "started"), ("ingest", "succeeded")]
+    assert ocr_queue == []
+
+
+@pytest.mark.parametrize(
+    ("content", "code"),
+    [
+        (sheets.truncated(sheets.multi_sheet_xlsx()), "spreadsheet_corrupt"),
+        (sheets.empty_xlsx(), "spreadsheet_empty"),
+    ],
+)
+def test_unusable_spreadsheet_fails_once_without_retry(
+    db: str, ingest: Task, storage: FakeStorage, content: bytes, code: str
+) -> None:
+    document_id = spreadsheet_document(db, storage, content)
+
+    ingest.apply(args=[str(document_id)])
+
+    document, events = load(db, document_id)
+    assert (document.status, document.error_code) == (DocumentStatus.FAILED, code)
+    assert [(e.status, e.attempt, e.error_code) for e in events] == [
+        ("started", 1, None),
+        ("failed", 1, code),
+    ]
     assert page_rows(db, document_id) == []
 
 
@@ -310,7 +353,9 @@ def test_ocr_error_is_retried_then_succeeds(
 
     attempts = 0
 
-    async def flaky(session: AsyncSession, storage: Any, document: Document) -> None:
+    async def flaky(
+        session: AsyncSession, storage: Any, document: Document, concurrency: int
+    ) -> None:
         nonlocal attempts
         attempts += 1
         if attempts == 1:
@@ -337,7 +382,9 @@ def test_exhausted_ocr_retries_mark_the_document_failed(
 ) -> None:
     import app.workers.tasks as tasks
 
-    async def always_fails(session: AsyncSession, storage: Any, document: Document) -> None:
+    async def always_fails(
+        session: AsyncSession, storage: Any, document: Document, concurrency: int
+    ) -> None:
         raise RuntimeError("engine is broken")
 
     monkeypatch.setattr(tasks, "ocr_pages", always_fails)
@@ -350,3 +397,34 @@ def test_exhausted_ocr_retries_mark_the_document_failed(
     assert (document.status, document.error_code) == (DocumentStatus.FAILED, "ocr_failed")
     failed = [e.attempt for e in events if e.status == "failed"]
     assert failed == list(range(1, ocr.max_retries + 2))
+
+
+@pytest.mark.parametrize(
+    ("source_type", "expected"),
+    [("pdf", "ingest_pdf"), ("image", "ingest_image"), ("spreadsheet", "ingest_spreadsheet")],
+)
+def test_each_file_type_is_routed_to_its_own_ingest(
+    ingest: Task, monkeypatch: pytest.MonkeyPatch, source_type: str, expected: str
+) -> None:
+    import app.workers.tasks as tasks
+
+    called: list[str] = []
+
+    def stub(name: str) -> Callable[..., Any]:
+        async def fake(*args: Any) -> None:
+            called.append(name)
+
+        return fake
+
+    for name in ("ingest_pdf", "ingest_image", "ingest_spreadsheet"):
+        monkeypatch.setattr(tasks, name, stub(name))
+
+    async def no_scanned_pages(*args: Any) -> bool:
+        return False
+
+    monkeypatch.setattr(tasks, "has_scanned_pages", no_scanned_pages)
+
+    unused: Any = None  # the stubs never touch the session or storage
+    run_sync(tasks.run_pipeline(unused, unused, make_document(source_type=source_type)))
+
+    assert called == [expected]

@@ -1,4 +1,4 @@
-.PHONY: help up dev down logs migrate test lint eval
+.PHONY: help up dev down logs migrate test bench lint eval
 
 help: ## List targets
 	@grep -hE '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-12s %s\n", $$1, $$2}'
@@ -23,6 +23,11 @@ test: ## Run backend and frontend tests (in Docker)
 	docker compose --profile test rm -sf postgres-test >/dev/null 2>&1; \
 	[ $$status -eq 0 ] || exit $$status
 	docker compose --profile test run --build --rm web-test
+
+bench: ## Run the slow large-document benchmarks (in Docker)
+	@docker compose --profile test run --build --rm backend-test pytest -m slow -s; status=$$?; \
+	docker compose --profile test rm -sf postgres-test >/dev/null 2>&1; \
+	exit $$status
 
 lint: ## Lint and typecheck backend and frontend (in Docker)
 	docker compose --profile test run --build --no-deps --rm backend-test sh -c "ruff check . && ruff format --check . && mypy app tests"
