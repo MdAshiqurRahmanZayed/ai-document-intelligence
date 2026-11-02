@@ -139,3 +139,17 @@ async def test_unknown_document_is_404(api: Api) -> None:
 
 async def test_malformed_id_is_422(api: Api) -> None:
     assert (await api.client.get(f"{URL}/not-a-uuid")).status_code == 422
+
+
+async def test_reupload_after_a_queue_failure_retries_the_document(api: Api) -> None:
+    api.enqueue.fail = True
+    failed = (await api.client.post(URL, files=[part("a.pdf", samples.pdf())])).json()["results"][0]
+    assert failed["reason"] == "queue_unavailable"
+
+    api.enqueue.fail = False
+    retry = (await api.client.post(URL, files=[part("a.pdf", samples.pdf())])).json()["results"][0]
+
+    assert retry["status"] == "accepted"
+    assert retry["document_id"] == failed["document_id"]
+    details = (await api.client.get(f"{URL}/{retry['document_id']}")).json()
+    assert (details["status"], details["error_code"]) == ("QUEUED", None)

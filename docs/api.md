@@ -43,7 +43,7 @@ curl -F "files=@invoice.pdf" -F "files=@data.csv" localhost:8000/api/v1/document
 | Result `status` | Meaning |
 |---|---|
 | `accepted` | Stored, recorded and queued for processing. `document_id` is set. |
-| `duplicate` | Identical bytes (same SHA-256) were uploaded before. `document_id` is the existing document; nothing is stored or processed again. |
+| `duplicate` | Identical bytes (same SHA-256) were uploaded before and that document is not `FAILED`. `document_id` is the existing document; nothing is stored or processed again. |
 | `rejected` | Not accepted. `reason` says why (see [reasons](#reference)). |
 
 Other responses: `422` if the request contains no files.
@@ -52,7 +52,7 @@ Notes:
 - The file type is decided from the file's **contents**, not its name or the client's content type. Accepted: PDF, JPEG, PNG, TIFF, XLSX, XLS, CSV.
 - Only exact duplicates are detected here. The same invoice re-scanned or re-saved is a different file.
 - A changed file has a different hash, so it is accepted as a new document.
-- A document in `FAILED` state still counts as the existing file, so uploading the same bytes again returns `duplicate` with that id and does not retry it. Retrying failed documents comes with the reprocess endpoint (Phase 4).
+- Uploading the same bytes again retries a document that is `FAILED`: it goes back to `QUEUED`, one new job is queued, and the result is `accepted` with the existing `document_id`. If the queue is still unavailable the result is `rejected` (`queue_unavailable`) and the document stays `FAILED`.
 
 ## Get a document
 

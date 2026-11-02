@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import BinaryIO, Literal
 
 import structlog
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -71,7 +71,7 @@ async def ingest_upload(
     sha256 = digest.hexdigest()
     existing = await _find_by_hash(session, sha256)
     if existing is not None:
-        return UploadResult(filename, "duplicate", existing)
+        return await _existing(session, enqueue, filename, existing)
 
     document_id = uuid.uuid4()
     # Key is built from the id and a type-derived extension only; the client filename never
@@ -105,23 +105,59 @@ async def ingest_upload(
         winner = await _find_by_hash(session, sha256)
         if winner is None:
             raise
-        return UploadResult(filename, "duplicate", winner)
+        return await _existing(session, enqueue, filename, winner)
 
     # QUEUED is committed before enqueueing: otherwise a fast worker could set PROCESSING
     # and this request would then overwrite it.
     document.status = DocumentStatus.QUEUED
     await session.commit()
+    return await _queue(session, enqueue, filename, document_id)
+
+
+async def _existing(
+    session: AsyncSession,
+    enqueue: Callable[[uuid.UUID], None],
+    filename: str,
+    document_id: uuid.UUID,
+) -> UploadResult:
+    """Identical bytes are already stored: retry the document if it failed, else a duplicate."""
+    # The UPDATE only matches while the row is still FAILED, so when several identical uploads
+    # arrive together exactly one claims the retry and queues the job; the rest see a duplicate.
+    claimed = await session.scalar(
+        update(Document)
+        .where(Document.id == document_id, Document.status == DocumentStatus.FAILED)
+        .values(status=DocumentStatus.QUEUED, error_code=None, error_message=None)
+        .returning(Document.id)
+    )
+    await session.commit()
+    if claimed is None:
+        return UploadResult(filename, "duplicate", document_id)
+    return await _queue(session, enqueue, filename, document_id)
+
+
+async def _queue(
+    session: AsyncSession,
+    enqueue: Callable[[uuid.UUID], None],
+    filename: str,
+    document_id: uuid.UUID,
+) -> UploadResult:
+    """Hand a QUEUED document to the broker; if that fails, mark it FAILED so it can be retried."""
     try:
         # .delay() is blocking network I/O, so it runs off the event loop.
         await asyncio.to_thread(enqueue, document_id)
     except Exception:
         log.exception("enqueue_failed", document_id=str(document_id))
-        document.status = DocumentStatus.FAILED
-        document.error_code = "queue_unavailable"
-        document.error_message = "Could not hand the document to the processing queue."
+        await session.execute(
+            update(Document)
+            .where(Document.id == document_id)
+            .values(
+                status=DocumentStatus.FAILED,
+                error_code="queue_unavailable",
+                error_message="Could not hand the document to the processing queue.",
+            )
+        )
         await session.commit()
         return _rejected(filename, "queue_unavailable", document_id)
-
     return UploadResult(filename, "accepted", document_id)
 
 

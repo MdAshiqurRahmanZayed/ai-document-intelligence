@@ -31,6 +31,12 @@ async def upload(
     )
 
 
+async def load(session: AsyncSession, document_id: uuid.UUID | None) -> Document | None:
+    # The service updates rows with bulk UPDATEs, which leave cached objects stale, so tests
+    # re-read from the database instead of trusting the session's identity map.
+    return await session.get(Document, document_id, populate_existing=True)
+
+
 async def count_documents(session: AsyncSession) -> int:
     return await session.scalar(select(func.count()).select_from(Document)) or 0
 
@@ -43,7 +49,7 @@ async def test_accepted_file_is_stored_recorded_and_queued(session: AsyncSession
     assert result.document_id is not None
     key = f"raw/{result.document_id}/original.pdf"
     assert storage.objects[key] == (samples.pdf(), "application/pdf")
-    document = await session.get(Document, result.document_id)
+    document = await load(session, result.document_id)
     assert document is not None
     assert document.status == DocumentStatus.QUEUED
     assert document.source_type == "pdf"
@@ -58,7 +64,7 @@ async def test_hash_is_correct_when_the_file_spans_several_chunks(
     data = samples.pdf("x" * 50)
     result = await upload(session, data, "big.pdf", FakeStorage(), RecordingEnqueue())
 
-    document = await session.get(Document, result.document_id)
+    document = await load(session, result.document_id)
     assert document is not None
     assert document.sha256 == hashlib.sha256(data).hexdigest()
     assert document.size == len(data)
@@ -147,7 +153,7 @@ async def test_queue_failure_keeps_a_failed_document(session: AsyncSession) -> N
     result = await upload(session, samples.pdf(), "a.pdf", storage, RecordingEnqueue(fail=True))
 
     assert (result.status, result.reason) == ("rejected", "queue_unavailable")
-    document = await session.get(Document, result.document_id)
+    document = await load(session, result.document_id)
     assert document is not None
     assert document.status == DocumentStatus.FAILED
     assert document.error_code == "queue_unavailable"
@@ -159,6 +165,54 @@ async def test_storage_key_ignores_the_client_filename(session: AsyncSession) ->
     result = await upload(session, samples.pdf(), "../../etc/passwd", storage, RecordingEnqueue())
 
     assert list(storage.objects) == [f"raw/{result.document_id}/original.pdf"]
-    document = await session.get(Document, result.document_id)
+    document = await load(session, result.document_id)
     assert document is not None
     assert document.filename == "../../etc/passwd"  # kept as display metadata only
+
+
+async def test_reuploading_a_failed_document_retries_it(session: AsyncSession) -> None:
+    storage = FakeStorage()
+    failed = await upload(session, samples.pdf(), "a.pdf", storage, RecordingEnqueue(fail=True))
+    assert failed.reason == "queue_unavailable"
+
+    enqueue = RecordingEnqueue()
+    retry = await upload(session, samples.pdf(), "a.pdf", storage, enqueue)
+
+    assert retry.status == "accepted"
+    assert retry.document_id == failed.document_id
+    document = await load(session, failed.document_id)
+    assert document is not None
+    assert document.status == DocumentStatus.QUEUED
+    assert document.error_code is None
+    assert enqueue.calls == [failed.document_id]
+    assert len(storage.objects) == 1  # the original object is reused
+    assert await count_documents(session) == 1
+
+
+async def test_failed_document_stays_failed_if_the_retry_cannot_be_queued(
+    session: AsyncSession,
+) -> None:
+    storage = FakeStorage()
+    first = await upload(session, samples.pdf(), "a.pdf", storage, RecordingEnqueue(fail=True))
+    retry = await upload(session, samples.pdf(), "a.pdf", storage, RecordingEnqueue(fail=True))
+
+    assert (retry.status, retry.reason) == ("rejected", "queue_unavailable")
+    assert retry.document_id == first.document_id
+    document = await load(session, first.document_id)
+    assert document is not None
+    assert (document.status, document.error_code) == (DocumentStatus.FAILED, "queue_unavailable")
+
+
+async def test_only_the_first_reupload_of_a_failed_document_queues_a_job(
+    session: AsyncSession,
+) -> None:
+    storage = FakeStorage()
+    failed = await upload(session, samples.pdf(), "a.pdf", storage, RecordingEnqueue(fail=True))
+
+    enqueue = RecordingEnqueue()
+    first = await upload(session, samples.pdf(), "a.pdf", storage, enqueue)
+    second = await upload(session, samples.pdf(), "a.pdf", storage, enqueue)
+
+    assert (first.status, second.status) == ("accepted", "duplicate")
+    assert second.document_id == failed.document_id
+    assert enqueue.calls == [failed.document_id]
