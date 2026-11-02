@@ -1,12 +1,17 @@
 import asyncio
 import uuid
 from collections.abc import Awaitable, Callable, Coroutine
+from dataclasses import dataclass
 from typing import Any
 
+from fastapi import FastAPI
+from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import NullPool
 
+from app.core.config import Settings
 from app.db.models import Document
+from tests.fakes import FakeStorage, RecordingEnqueue
 
 
 def run_sync[T](coro: Coroutine[Any, Any, T]) -> T:
@@ -45,3 +50,14 @@ def make_document(**overrides: Any) -> Document:
     }
     fields.update(overrides)
     return Document(**fields)
+
+
+@dataclass
+class Api:
+    """A running app with in-memory storage and queue, and a client that talks to it."""
+
+    client: AsyncClient
+    storage: FakeStorage
+    enqueue: RecordingEnqueue
+    settings: Settings
+    app: FastAPI

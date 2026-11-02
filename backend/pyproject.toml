@@ -22,6 +22,11 @@ dependencies = [
     "openpyxl>=3.1.5",
     "xlrd>=2.0.1",
     "charset-normalizer>=3.4.0",
+    "langchain-core",
+    "langchain-google-genai",
+    "rapidfuzz",
+    "dateparser",
+    "pycountry",
 ]
 
 [dependency-groups]
@@ -57,7 +62,7 @@ addopts = '-m "not slow"'
 markers = ["slow: large-document benchmarks, run with make bench"]
 
 [[tool.mypy.overrides]]
-module = ["celery.*", "kombu.*", "openpyxl.*", "pypdfium2.*", "reportlab.*", "pytesseract.*", "xlrd.*", "xlwt.*"]
+module = ["celery.*", "kombu.*", "openpyxl.*", "pypdfium2.*", "reportlab.*", "pytesseract.*", "xlrd.*", "xlwt.*", "dateparser.*", "pycountry.*"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
