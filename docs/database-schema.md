@@ -22,12 +22,16 @@ flowchart LR
 
 ## Entities that exist now
 
-Migration `0001`.
+Migration `0001` (documents, pages, processing events) and `0002` (extractions, validation errors, cross-checks).
 
 ```mermaid
 erDiagram
     documents ||--o{ pages : "has pages"
     documents ||--o{ processing_events : "has history"
+    documents ||--o{ extractions : "has versions"
+    extractions ||--o{ validation_errors : "has findings"
+    documents ||--o{ validation_errors : "has document-level findings"
+    documents ||--o{ cross_checks : "compared (left and right)"
 
     documents {
         uuid id PK
@@ -66,6 +70,49 @@ erDiagram
         integer attempt "1, 2, 3 ..."
         timestamptz created_at "indexed with document_id"
     }
+
+    extractions {
+        uuid id PK
+        uuid document_id FK "cascade delete"
+        integer invoice_index "position of the invoice in the document, from 0"
+        integer version "one per extraction run"
+        boolean is_current "one current version per invoice"
+        jsonb data "normalized invoice, amounts as strings"
+        jsonb field_confidence "field to 0..1"
+        jsonb grounding "field to source quote"
+        varchar model
+        varchar prompt_version
+        timestamptz created_at
+        varchar invoice_number "copy of data, nullable"
+        varchar supplier_norm "normalized supplier name, nullable"
+        date invoice_date "nullable"
+        numeric total "numeric(18,4), nullable"
+        varchar currency "ISO 4217, nullable"
+    }
+
+    validation_errors {
+        bigint id PK
+        uuid document_id FK "cascade delete"
+        uuid extraction_id FK "nullable: document-level finding"
+        varchar code "e.g. total_mismatch"
+        varchar field "nullable"
+        varchar severity "error warning"
+        text message
+        uuid related_document_id FK "nullable: the other document of a duplicate"
+        timestamptz created_at
+    }
+
+    cross_checks {
+        bigint id PK
+        uuid left_document_id FK "cascade delete"
+        uuid right_document_id FK "cascade delete"
+        uuid left_extraction_id FK "nullable, set null on delete"
+        uuid right_extraction_id FK "nullable, set null on delete"
+        varchar match_key "nullable"
+        varchar status "match mismatch unmatched"
+        jsonb diffs "list of field, left, right"
+        timestamptz created_at
+    }
 ```
 
 Constraints and indexes:
@@ -75,6 +122,9 @@ Constraints and indexes:
 | `documents` | primary key `id`; unique `sha256` (also the duplicate lookup index) |
 | `pages` | primary key `id`; foreign key `document_id` with cascade delete; unique `(document_id, page_no)` |
 | `processing_events` | primary key `id`; foreign key `document_id` with cascade delete; index `(document_id, created_at)` |
+| `extractions` | primary key `id`; foreign key `document_id` with cascade delete; unique `(document_id, invoice_index, version)`; index `(supplier_norm, invoice_number)` (duplicate lookup); index `(document_id, is_current)` |
+| `validation_errors` | primary key `id`; foreign keys `document_id` and `extraction_id` with cascade delete, `related_document_id` set null on delete |
+| `cross_checks` | primary key `id`; foreign keys `left_document_id` and `right_document_id` with cascade delete, `left_extraction_id` and `right_extraction_id` set null on delete; index `(left_document_id, right_document_id)` |
 
 Rules worth knowing:
 - Deleting a document deletes its pages and events (database-level cascade).
@@ -86,89 +136,19 @@ Rules worth knowing:
 - Every frame of an image file (JPG, PNG, each TIFF frame) is saved as a `scanned` page. Only scanned pages get an image, stored at `pages/<document_id>/<page_no>.png` (300 DPI PNG). Text pages are not rendered.
 - Re-processing a document updates its page rows in place (upsert on `(document_id, page_no)`).
 - Storage keys are built from the document id and a type-derived extension, never from the client filename.
+- Extractions are versioned: each extraction run inserts new rows with the next `version` and sets earlier versions of the document's invoices to `is_current = false`. Reads use `is_current = true`.
+- An invoice's position in the document (`invoice_index`) identifies it across versions. A document with several invoices has several rows per version; a document with none has no rows and a document-level `no_invoice_found` finding.
+- `data` holds the normalized invoice including its line items (description, quantity, unit price, amount) with amounts as strings. There is no `line_items` table: nothing queries lines yet. The scalar columns (`invoice_number`, `supplier_norm`, `invoice_date`, `total`, `currency`) are copies of `data` for indexed lookups; `total` is `numeric`, never float.
+- `validation_errors` rows of an invoice are replaced when it is validated again. `validation_errors.extraction_id` is null for findings about the whole document.
+- `cross_checks` rows of a pair of documents are replaced when the pair is compared again. A row with one extraction id null is an invoice with no match on that side.
 
 ## Planned entities
 
-Not created yet. Shown so the whole model is visible. Columns are indicative and will be fixed by each phase's change.
-
-```mermaid
-erDiagram
-    documents ||--o{ documents : "split into (parent_id)"
-    documents ||--o{ extractions : "has versions"
-    extractions ||--o{ line_items : "has"
-    extractions ||--o{ corrections : "audit trail"
-    documents ||--o{ validation_errors : "has"
-    documents ||--o{ chunks : "searchable text"
-    documents ||--o{ cross_checks : "left side"
-    documents ||--o{ cross_checks : "right side"
-
-    extractions {
-        uuid id PK
-        uuid document_id FK
-        integer version
-        jsonb data "invoice fields"
-        jsonb field_confidence
-        jsonb grounding "source page and quote"
-        varchar model
-        varchar prompt_version
-        boolean is_current
-        timestamptz created_at
-    }
-
-    line_items {
-        bigint id PK
-        uuid extraction_id FK
-        text description
-        numeric quantity
-        numeric unit_price
-        numeric amount
-        integer position
-    }
-
-    validation_errors {
-        bigint id PK
-        uuid document_id FK
-        uuid extraction_id FK
-        varchar code
-        varchar field
-        varchar severity "error warning"
-        text message
-        boolean resolved
-    }
-
-    corrections {
-        bigint id PK
-        uuid extraction_id FK
-        varchar field
-        text old_value
-        text new_value
-        varchar edited_by
-        timestamptz created_at
-    }
-
-    chunks {
-        bigint id PK
-        uuid document_id FK
-        integer page_no
-        text text
-        tsvector tsv "keyword search, GIN index"
-        vector embedding "semantic search, HNSW index"
-    }
-
-    cross_checks {
-        bigint id PK
-        uuid left_document_id FK
-        uuid right_document_id FK
-        varchar match_key "invoice number"
-        jsonb diffs
-        varchar status
-    }
-```
+Not created yet. Columns are indicative and will be fixed by the change that adds them.
 
 | Planned table | Phase | Purpose |
 |---|---|---|
-| `documents.parent_id` (new column) | 2 | a PDF holding several invoices is split into child documents |
-| `extractions`, `line_items` | 2 | structured invoice data from Gemini, versioned; money columns are `numeric`, never float |
-| `validation_errors`, `cross_checks` | 3 | rule failures, and comparisons between documents |
-| `corrections` | 4 | manual edits with who and when |
-| `chunks` | 4 | text pieces for keyword and semantic search; the `embedding vector(N)` size must match the embedding model pinned in Phase 2 |
+| `corrections` | 4 | manual edits with who and when; a correction writes a new `extractions` version |
+| `chunks` | 4 | text pieces for keyword and semantic search; the `embedding vector(N)` size must match the embedding model chosen then |
+
+Dropped from the original sketch: `documents.parent_id` (a document holding several invoices keeps one row per invoice in `extractions` instead of child documents) and `line_items` (line items live in `extractions.data`).
