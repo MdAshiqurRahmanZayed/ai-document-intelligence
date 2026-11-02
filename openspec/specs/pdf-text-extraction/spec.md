@@ -1,10 +1,9 @@
-# Spec Delta
+# pdf-text-extraction Specification
 
 ## Purpose
-
 Turns a stored PDF into per-page records the rest of the pipeline can use: the text of each page, a clear marker for pages that need OCR, and a clear failure when the PDF cannot be read.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Per-page text
 When the ingest job runs for a PDF document, the system SHALL save one page record per PDF page, numbered from 1, containing the page's embedded text and the method `native`, and SHALL set the document's page count.
@@ -70,7 +69,7 @@ The system SHALL process pages one at a time, SHALL save page records in batches
 - **AND** the document has exactly one record per page number
 
 ### Requirement: Unusable PDFs fail with a clear code
-If a PDF cannot be read, the system SHALL set the document to `FAILED` with error code `pdf_corrupt` when the file is damaged, `pdf_encrypted` when it needs a password, or `pdf_empty` when it has no pages, SHALL record a failed processing event, and SHALL NOT retry the job.
+If a PDF cannot be read, the system SHALL set the document to `FAILED` with error code `pdf_corrupt` when the file is damaged or has no pages (the PDF reader refuses a file without pages), `pdf_encrypted` when it needs a password, or `pdf_empty` when a file opens but reports zero pages, SHALL record a failed processing event, and SHALL NOT retry the job.
 
 #### Scenario: Corrupt PDF
 - **GIVEN** an uploaded file that starts like a PDF but is truncated
@@ -86,7 +85,7 @@ If a PDF cannot be read, the system SHALL set the document to `FAILED` with erro
 #### Scenario: PDF with no pages
 - **GIVEN** an uploaded PDF that contains zero pages
 - **WHEN** the ingest job runs
-- **THEN** the document is `FAILED` with error code `pdf_empty`
+- **THEN** the document is `FAILED` with error code `pdf_corrupt`
 
 ### Requirement: Non-PDF documents are unaffected
 The system SHALL NOT create page records for documents that are not PDFs in this change.

@@ -32,7 +32,7 @@ The ingest task (`app/workers/tasks.py`) already moves a document `QUEUED -> PRO
 
 **D8. `method` and the scanned convention, no migration.** `pages.method` takes `native`, `scanned` (waiting for OCR), `ocr` and `vision`. A scanned page has `text` NULL and `image_key` set; the OCR change fills `text`, sets `method = "ocr"`, and keeps the image. The `String(20)` column already fits.
 
-**D9. Error classification.** `pipeline/pdf.py` raises `PdfError` carrying a code: a password failure from PDFium becomes `pdf_encrypted`, any other load failure `pdf_corrupt`, zero pages `pdf_empty`. The task catches `PdfError`, marks the document `FAILED` with that code, writes a `failed` event and returns without raising, so Celery does not retry a PDF that will never open. Other exceptions (network, database, storage) still raise and are retried as before.
+**D9. Error classification.** `pipeline/pdf.py` raises `PdfError` carrying a code: a password failure from PDFium becomes `pdf_encrypted`, any other load failure `pdf_corrupt`, zero pages `pdf_empty`. In practice PDFium refuses a PDF with no pages, so a real page-less file ends as `pdf_corrupt`; the `pdf_empty` check stays as a defensive guard. The task catches `PdfError`, marks the document `FAILED` with that code, writes a `failed` event and returns without raising, so Celery does not retry a PDF that will never open. Other exceptions (network, database, storage) still raise and are retried as before.
 
 **D10. NUL characters.** PostgreSQL text cannot hold `\x00`, and PDFs sometimes produce it. It is stripped from page text before saving.
 

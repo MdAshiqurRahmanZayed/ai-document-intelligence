@@ -25,7 +25,7 @@
 ## 6. Integration verification
 
 - [x] 6.1 Rebuild the stack (`make up`), upload a digital PDF and an image-only PDF, and verify `page_count`, page rows with method `native` and `scanned`, and a PNG only for the scanned page in the bucket
-- [ ] 6.2 Generate a 1000-page PDF, upload it, and verify it reaches `COMPLETED` with 1000 page rows, recording total time and the worker's peak memory (`docker stats`) to confirm memory stays flat
+- [ ] 6.2 Generate a 1000-page PDF, upload it, and verify it reaches `COMPLETED` with 1000 page rows, recording total time and the worker's peak memory (`docker stats`) to confirm memory stays flat (deferred by the user: 1000 pages completed in about 4 s, memory evidence not conclusive)
 - [x] 6.3 Upload a truncated PDF and a password-protected PDF and verify `FAILED` with `pdf_corrupt` and `pdf_encrypted`, each with a single attempt in the history
 - [x] 6.4 Run `make lint`, `make test` (earlier tests included) and `openspec validate add-pdf-extraction --strict`, and verify all pass
 
