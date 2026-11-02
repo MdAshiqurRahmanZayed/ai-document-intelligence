@@ -56,7 +56,7 @@ The API SHALL reject empty files and files larger than the configured `MAX_UPLOA
 - **AND** nothing is stored for that file
 
 ### Requirement: Duplicate detection
-The API SHALL treat a file whose SHA-256 matches an existing document as a duplicate: return the existing document's id and not store or process it again.
+The API SHALL treat a file whose SHA-256 matches an existing document as a duplicate: return the existing document's id and not store or process it again. If that document is `FAILED`, the API SHALL instead clear its error, set it to `QUEUED`, queue a new job and report the file as `accepted` with the existing id.
 
 #### Scenario: Same file uploaded twice
 - **GIVEN** a PDF was accepted earlier as document A
@@ -68,6 +68,25 @@ The API SHALL treat a file whose SHA-256 matches an existing document as a dupli
 #### Scenario: Same file twice in one request
 - **WHEN** a client uploads identical bytes twice in one request
 - **THEN** the first result is `accepted` and the second is `duplicate` with the same `document_id`
+
+#### Scenario: Re-upload of a failed document
+- **GIVEN** document A is `FAILED`
+- **WHEN** the same file is uploaded again
+- **THEN** the result is `accepted` with `document_id` equal to A
+- **AND** A's status is `QUEUED` with no error code
+- **AND** one new job is queued
+- **AND** no new document or stored object is created
+
+#### Scenario: Retry fails to queue
+- **GIVEN** document A is `FAILED` and the queue refuses jobs
+- **WHEN** the same file is uploaded again
+- **THEN** the result is `rejected` with reason `queue_unavailable` and A's `document_id`
+- **AND** A is `FAILED` with error code `queue_unavailable`
+
+#### Scenario: Simultaneous re-uploads of a failed document
+- **GIVEN** document A is `FAILED`
+- **WHEN** two identical uploads arrive at the same time
+- **THEN** exactly one is `accepted` and queues one job, and the other is `duplicate`
 
 ### Requirement: Safe storage naming
 The system SHALL store each uploaded file under a key derived from the document id and a file extension chosen from the detected type, and SHALL NOT use any part of the client-supplied filename in the key.
