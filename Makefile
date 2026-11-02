@@ -19,11 +19,13 @@ migrate: ## Apply database migrations
 	docker compose exec api alembic upgrade head
 
 test: ## Run backend and frontend tests (in Docker)
-	docker compose --profile test run --build --rm backend-test
+	@docker compose --profile test run --build --rm backend-test; status=$$?; \
+	docker compose --profile test rm -sf postgres-test >/dev/null 2>&1; \
+	[ $$status -eq 0 ] || exit $$status
 	docker compose --profile test run --build --rm web-test
 
 lint: ## Lint and typecheck backend and frontend (in Docker)
-	docker compose --profile test run --build --rm backend-test sh -c "ruff check . && ruff format --check . && mypy app tests"
+	docker compose --profile test run --build --no-deps --rm backend-test sh -c "ruff check . && ruff format --check . && mypy app tests"
 	docker compose --profile test run --build --rm web-test sh -c "npm run lint && npm run typecheck"
 
 eval: ## Run the evaluation harness (added in Phase 6)

@@ -8,7 +8,8 @@ from app.core.logging import configure_logging
 settings = get_settings()
 redis_url = settings.redis_url.get_secret_value()
 
-celery_app = Celery("docint", broker=redis_url, backend=redis_url)
+# `include` makes workers import the tasks module, which registers its tasks.
+celery_app = Celery("docint", broker=redis_url, backend=redis_url, include=["app.workers.tasks"])
 celery_app.conf.update(
     task_serializer="json",
     result_serializer="json",
