@@ -56,6 +56,26 @@ async def test_accepted_file_is_stored_recorded_and_queued(session: AsyncSession
     assert enqueue.calls == [result.document_id]
 
 
+@pytest.mark.parametrize(
+    ("data", "filename", "source_type", "extension"),
+    [
+        (samples.PNG, "scan.pdf", "image", ".png"),  # an image named like a PDF
+        (samples.pdf(), "scan.jpg", "pdf", ".pdf"),  # a PDF named like an image
+    ],
+)
+async def test_wrong_extension_is_stored_by_what_the_bytes_are(
+    session: AsyncSession, data: bytes, filename: str, source_type: str, extension: str
+) -> None:
+    storage, enqueue = FakeStorage(), RecordingEnqueue()
+    result = await upload(session, data, filename, storage, enqueue)
+
+    assert result.status == "accepted"
+    document = await load(session, result.document_id)
+    assert document is not None
+    assert document.source_type == source_type
+    assert document.storage_key == f"raw/{document.id}/original{extension}"
+
+
 async def test_hash_is_correct_when_the_file_spans_several_chunks(
     session: AsyncSession, monkeypatch: pytest.MonkeyPatch
 ) -> None:

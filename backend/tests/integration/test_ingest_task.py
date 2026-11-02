@@ -12,7 +12,7 @@ from tests import image_samples as images
 from tests import pdf_samples as samples
 from tests import spreadsheet_samples as sheets
 from tests.fakes import FakeStorage
-from tests.helpers import make_document, with_session
+from tests.helpers import make_document, run_sync, with_session
 
 # These tests are synchronous on purpose: the task calls asyncio.run() itself, which cannot
 # run inside pytest-asyncio's already-running loop.
@@ -397,3 +397,34 @@ def test_exhausted_ocr_retries_mark_the_document_failed(
     assert (document.status, document.error_code) == (DocumentStatus.FAILED, "ocr_failed")
     failed = [e.attempt for e in events if e.status == "failed"]
     assert failed == list(range(1, ocr.max_retries + 2))
+
+
+@pytest.mark.parametrize(
+    ("source_type", "expected"),
+    [("pdf", "ingest_pdf"), ("image", "ingest_image"), ("spreadsheet", "ingest_spreadsheet")],
+)
+def test_each_file_type_is_routed_to_its_own_ingest(
+    ingest: Task, monkeypatch: pytest.MonkeyPatch, source_type: str, expected: str
+) -> None:
+    import app.workers.tasks as tasks
+
+    called: list[str] = []
+
+    def stub(name: str) -> Callable[..., Any]:
+        async def fake(*args: Any) -> None:
+            called.append(name)
+
+        return fake
+
+    for name in ("ingest_pdf", "ingest_image", "ingest_spreadsheet"):
+        monkeypatch.setattr(tasks, name, stub(name))
+
+    async def no_scanned_pages(*args: Any) -> bool:
+        return False
+
+    monkeypatch.setattr(tasks, "has_scanned_pages", no_scanned_pages)
+
+    unused: Any = None  # the stubs never touch the session or storage
+    run_sync(tasks.run_pipeline(unused, unused, make_document(source_type=source_type)))
+
+    assert called == [expected]
