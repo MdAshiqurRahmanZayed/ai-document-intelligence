@@ -353,7 +353,9 @@ def test_ocr_error_is_retried_then_succeeds(
 
     attempts = 0
 
-    async def flaky(session: AsyncSession, storage: Any, document: Document) -> None:
+    async def flaky(
+        session: AsyncSession, storage: Any, document: Document, concurrency: int
+    ) -> None:
         nonlocal attempts
         attempts += 1
         if attempts == 1:
@@ -380,7 +382,9 @@ def test_exhausted_ocr_retries_mark_the_document_failed(
 ) -> None:
     import app.workers.tasks as tasks
 
-    async def always_fails(session: AsyncSession, storage: Any, document: Document) -> None:
+    async def always_fails(
+        session: AsyncSession, storage: Any, document: Document, concurrency: int
+    ) -> None:
         raise RuntimeError("engine is broken")
 
     monkeypatch.setattr(tasks, "ocr_pages", always_fails)

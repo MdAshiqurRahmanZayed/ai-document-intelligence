@@ -148,7 +148,8 @@ async def _run_ocr(document_id: uuid.UUID, attempt: int) -> None:
         await session.commit()
 
         try:
-            await ocr_pages(session, build_s3_storage(get_settings()), document)
+            settings = get_settings()
+            await ocr_pages(session, build_s3_storage(settings), document, settings.ocr_concurrency)
         except Exception as exc:
             log.exception("ocr_attempt_failed", document_id=str(document_id), attempt=attempt)
             session.add(
