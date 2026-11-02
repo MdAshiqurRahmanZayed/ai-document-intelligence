@@ -66,3 +66,6 @@ eval/dataset/documents/
 # Keep ground truth + generated reports committed.
 !eval/dataset/ground_truth/
 eval/.cache/
+
+# Manual-test PDFs (local only, not committed)
+backend/tests/fixture-pdf/
