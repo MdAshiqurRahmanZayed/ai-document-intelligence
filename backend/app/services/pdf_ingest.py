@@ -9,7 +9,7 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import Document, Page
-from app.pipeline.pdf import PageContent, extract_pages, page_count
+from app.pipeline.pdf import PageContent, PdfReader
 from app.services.storage import Storage
 
 # Pages saved per commit: progress survives a crash without a commit per page.
@@ -27,10 +27,11 @@ async def ingest_pdf(session: AsyncSession, storage: Storage, document: Document
         with path.open("wb") as file:
             await storage.download(document.storage_key, file)
 
-        document.page_count = await asyncio.to_thread(page_count, path)
+        reader = PdfReader(path)
+        document.page_count = await asyncio.to_thread(reader.page_count)
         await session.commit()  # lets progress be shown while the pages are still being read
 
-        pages = extract_pages(path)
+        pages = reader.pages()
         try:
             while batch := await asyncio.to_thread(_next_batch, pages):
                 await _save_batch(session, storage, document, batch)

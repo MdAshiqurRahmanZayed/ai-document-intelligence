@@ -5,8 +5,7 @@ from unittest.mock import patch
 import pytest
 from PIL import Image
 
-from app.pipeline import pdf
-from app.pipeline.pdf import PdfError, extract_pages, page_count
+from app.pipeline.pdf import PdfError, PdfReader
 from tests import pdf_samples as samples
 
 
@@ -23,29 +22,29 @@ def png_size(data: bytes) -> tuple[int, int]:
 def test_text_pages_are_extracted_without_images(tmp_path: Path) -> None:
     path = write(tmp_path, samples.text_pdf(3))
 
-    pages = list(extract_pages(path))
+    pages = list(PdfReader(path).pages())
 
-    assert page_count(path) == 3
+    assert PdfReader(path).page_count() == 3
     assert [p.page_no for p in pages] == [1, 2, 3]
     assert all(p.text and p.image is None for p in pages)
     assert "page 2" in (pages[1].text or "")
 
 
 def test_image_only_page_is_scanned_and_rendered(tmp_path: Path) -> None:
-    (page,) = extract_pages(write(tmp_path, samples.scanned_pdf()))
+    (page,) = PdfReader(write(tmp_path, samples.scanned_pdf())).pages()
 
     assert page.text is None
     assert page.image is not None and page.image.startswith(b"\x89PNG")
 
 
 def test_mixed_pdf_renders_only_the_scanned_page(tmp_path: Path) -> None:
-    pages = list(extract_pages(write(tmp_path, samples.mixed_pdf())))
+    pages = list(PdfReader(write(tmp_path, samples.mixed_pdf())).pages())
 
     assert [p.image is not None for p in pages] == [False, True, False]
 
 
 def test_render_is_300_dpi(tmp_path: Path) -> None:
-    (page,) = extract_pages(write(tmp_path, samples.scanned_pdf()))
+    (page,) = PdfReader(write(tmp_path, samples.scanned_pdf())).pages()
 
     assert page.image is not None
     width, height = png_size(page.image)
@@ -54,10 +53,10 @@ def test_render_is_300_dpi(tmp_path: Path) -> None:
 
 def test_oversized_page_is_scaled_down_to_the_cap(tmp_path: Path) -> None:
     poster = samples.build_pdf([None], size=(2000, 3000))  # would be 12500px at 300 DPI
-    (page,) = extract_pages(write(tmp_path, poster))
+    (page,) = PdfReader(write(tmp_path, poster)).pages()
 
     assert page.image is not None
-    assert max(png_size(page.image)) <= pdf.MAX_IMAGE_SIDE
+    assert max(png_size(page.image)) <= PdfReader.MAX_IMAGE_SIDE
 
 
 def test_nul_characters_are_removed() -> None:
@@ -71,20 +70,20 @@ def test_nul_characters_are_removed() -> None:
         def get_textpage(self) -> Textpage:
             return Textpage()
 
-    content = pdf._read_page(Page(), 1)
+    content = PdfReader._read_page(Page(), 1)
 
     assert content.text == "Invoice number 1042 total due 250.00"
 
 
 def test_encrypted_pdf_is_reported(tmp_path: Path) -> None:
     with pytest.raises(PdfError) as caught:
-        page_count(write(tmp_path, samples.encrypted_pdf()))
+        PdfReader(write(tmp_path, samples.encrypted_pdf())).page_count()
     assert caught.value.code == "pdf_encrypted"
 
 
 def test_truncated_pdf_is_reported_as_corrupt(tmp_path: Path) -> None:
     with pytest.raises(PdfError) as caught:
-        page_count(write(tmp_path, samples.corrupt_pdf()))
+        PdfReader(write(tmp_path, samples.corrupt_pdf())).page_count()
     assert caught.value.code == "pdf_corrupt"
 
 
@@ -94,7 +93,7 @@ def test_pdf_without_pages_is_reported_as_empty(tmp_path: Path) -> None:
     empty = type("Empty", (), {"__len__": lambda s: 0, "close": lambda s: None})()
     with patch("pypdfium2.PdfDocument", return_value=empty):
         with pytest.raises(PdfError) as caught:
-            page_count(tmp_path / "x.pdf")
+            PdfReader(tmp_path / "x.pdf").page_count()
     assert caught.value.code == "pdf_empty"
 
 
@@ -102,12 +101,12 @@ def test_real_pdf_with_an_empty_page_tree_is_rejected_by_pdfium(tmp_path: Path) 
     # Pins current PDFium behaviour: it will not open a page-less file, so a real one is
     # reported as corrupt rather than empty. If a PDFium upgrade changes this, revisit D9.
     with pytest.raises(PdfError) as caught:
-        page_count(write(tmp_path, samples.empty_pdf()))
+        PdfReader(write(tmp_path, samples.empty_pdf())).page_count()
     assert caught.value.code == "pdf_corrupt"
 
 
 def test_pages_are_produced_lazily(tmp_path: Path) -> None:
-    pages = extract_pages(write(tmp_path, samples.text_pdf(50)))
+    pages = PdfReader(write(tmp_path, samples.text_pdf(50))).pages()
 
     first = next(pages)
 
