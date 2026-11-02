@@ -51,14 +51,14 @@ erDiagram
         integer page_no "unique with document_id"
         text text "nullable, extracted text"
         varchar method "nullable: native scanned ocr vision"
-        float ocr_confidence "nullable"
+        float ocr_confidence "nullable, 0 to 1"
         varchar image_key "nullable, pages/id/page_no.png"
     }
 
     processing_events {
         bigint id PK
         uuid document_id FK "cascade delete"
-        varchar stage "ingest"
+        varchar stage "ingest ocr"
         varchar status "started succeeded failed"
         integer duration_ms "nullable"
         varchar error_code "nullable"
@@ -79,8 +79,10 @@ Constraints and indexes:
 Rules worth knowing:
 - Deleting a document deletes its pages and events (database-level cascade).
 - `status` is a plain string checked in code (`DocumentStatus`), so new statuses need no migration.
-- `pages.method`: `native` (text read from the PDF), `scanned` (almost no text, waiting for OCR: `text` is null and `image_key` is set), `ocr` and `vision` (set by later changes).
-- Only scanned pages get an image, stored at `pages/<document_id>/<page_no>.png` (300 DPI PNG). Text pages are not rendered.
+- `pages.method`: `native` (text read from the PDF), `scanned` (almost no text, waiting for OCR: `text` is null and `image_key` is set), `ocr` (text read by Tesseract from the page image) and `vision` (set by a later change).
+- `ocr_confidence` is the mean Tesseract word confidence on a 0 to 1 scale; NULL for native pages, for pages with no recognised words, and again whenever a page is re-saved by ingestion (a re-run starts clean and OCR fills it in again).
+- Scanned-page lifecycle: ingestion saves the page as `scanned` (text NULL, image stored) -> OCR job sets `text`, `method=ocr`, `ocr_confidence`. A blank page ends as `ocr` with empty text.
+- Every frame of an image file (JPG, PNG, each TIFF frame) is saved as a `scanned` page. Only scanned pages get an image, stored at `pages/<document_id>/<page_no>.png` (300 DPI PNG). Text pages are not rendered.
 - Re-processing a document updates its page rows in place (upsert on `(document_id, page_no)`).
 - Storage keys are built from the document id and a type-derived extension, never from the client filename.
 
