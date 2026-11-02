@@ -30,6 +30,8 @@ Processes invoices/receipts from PDF, scanned PDF, JPG/PNG/TIFF, XLSX/XLS, and C
 - Document text sent to the LLM is delimited and treated as data (prompt-injection guard).
 - LangChain is a thin layer only (LLM, structured output, embeddings, vector store).
 - Tests never call the real LLM — use fake chat models / recorded responses.
+- Keep `docs/api.md` in sync whenever an endpoint, response field or error reason changes.
+- Keep `docs/database-schema.md` in sync whenever a model or migration changes.
 - Secrets only in `.env` (never committed); `.env.example` documents every variable.
 
 ## Commands (planned — update when Makefile exists)

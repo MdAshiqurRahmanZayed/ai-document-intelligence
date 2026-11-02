@@ -41,9 +41,13 @@ curl -i localhost:8000/readyz       # 503, only "redis": "error"; /healthz stays
 docker compose start redis          # back to 200
 ```
 
+## API
+
+Run `make migrate` once (and after pulling new migrations) to create the tables. Endpoint reference: [docs/api.md](docs/api.md). Interactive docs: http://localhost:8000/docs
+
 ## Tests
 
-Both run in throwaway Docker containers, so you need no local Python or Node. They work while `make dev` or `make up` is running (use a second terminal) and never touch the running stack.
+Both run in throwaway Docker containers (`make test` also starts a temporary Postgres for the database tests and removes it afterwards), so you need no local Python or Node. They work while `make dev` or `make up` is running (use a second terminal) and never touch the running stack.
 
 ```bash
 make test      # backend (pytest) + frontend (vitest): 13 + 3 passed
