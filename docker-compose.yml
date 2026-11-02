@@ -152,12 +152,34 @@ services:
     networks: [app]
 
   # Throwaway test containers: `make test` / `make lint` (profile "test", never started by up/dev).
+  # Throwaway database for DB-backed tests: data lives in RAM and vanishes with the container.
+  postgres-test:
+    profiles: [test]
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: test
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U test -d test"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+    networks: [app]
+
   backend-test:
     profiles: [test]
     build:
       context: ./backend
       target: test
     image: ai-document-intelligence-backend-test:local
+    environment:
+      TEST_DATABASE_URL: postgresql+asyncpg://test:test@postgres-test:5432/test
+    depends_on:
+      postgres-test:
+        condition: service_healthy
     networks: [app]
 
   web-test:
