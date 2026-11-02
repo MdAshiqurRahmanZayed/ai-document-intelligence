@@ -1,6 +1,7 @@
 import asyncio
 import time
 import uuid
+from datetime import UTC, datetime
 from typing import Any
 
 import structlog
@@ -10,9 +11,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import get_settings
 from app.db.models import Document, DocumentStatus, ProcessingEvent
 from app.db.session import worker_session
+from app.llm.extract import build_extractor
 from app.pipeline.image import ImageError
 from app.pipeline.pdf import PdfError
 from app.pipeline.spreadsheet import SpreadsheetError
+from app.services.extraction import run_extraction
 from app.services.image_ingest import ingest_image
 from app.services.ocr_ingest import has_scanned_pages, ocr_pages
 from app.services.pdf_ingest import ingest_pdf
@@ -24,6 +27,7 @@ log = structlog.get_logger()
 
 STAGE = "ingest"
 OCR_STAGE = "ocr"
+EXTRACT_STAGE = "extract"
 
 _UNUSABLE_MESSAGES = {
     "pdf_corrupt": "The PDF is damaged and could not be read.",
@@ -83,6 +87,18 @@ class OcrTask(Task):
         asyncio.run(_mark_failed(uuid.UUID(args[0]), exc, "ocr_failed"))
 
 
+class ExtractTask(Task):
+    def on_failure(
+        self,
+        exc: Exception,
+        task_id: str,
+        args: tuple[Any, ...],
+        kwargs: dict[str, Any],
+        einfo: Any,
+    ) -> None:
+        asyncio.run(_mark_failed(uuid.UUID(args[0]), exc, "extraction_failed"))
+
+
 @celery_app.task(bind=True, base=IngestTask, name="app.workers.ingest_document", **_RETRY)
 def ingest_document(self: Task, document_id: str) -> None:
     asyncio.run(_run(uuid.UUID(document_id), attempt=self.request.retries + 1))
@@ -92,6 +108,31 @@ def ingest_document(self: Task, document_id: str) -> None:
 @celery_app.task(bind=True, base=OcrTask, name="app.workers.ocr_document", queue="ocr", **_RETRY)
 def ocr_document(self: Task, document_id: str) -> None:
     asyncio.run(_run_ocr(uuid.UUID(document_id), attempt=self.request.retries + 1))
+
+
+# Own queue, and a rate limit as a guard on the model provider's quota.
+@celery_app.task(
+    bind=True,
+    base=ExtractTask,
+    name="app.workers.extract_document",
+    queue="llm",
+    rate_limit="30/m",
+    **_RETRY,
+)
+def extract_document(self: Task, document_id: str) -> None:
+    asyncio.run(_run_extract(uuid.UUID(document_id), attempt=self.request.retries + 1))
+
+
+def _extraction_enabled() -> bool:
+    # Without a key there is no model to call: documents complete with their text only.
+    return get_settings().google_api_key is not None
+
+
+def _after_ingest(ocr_pending: bool) -> Task | None:
+    """The job that continues once the pages are saved, or None when the document is done."""
+    if ocr_pending:
+        return ocr_document
+    return extract_document if _extraction_enabled() else None
 
 
 async def _run(document_id: uuid.UUID, attempt: int) -> None:
@@ -126,15 +167,16 @@ async def _run(document_id: uuid.UUID, attempt: int) -> None:
             await session.commit()
             raise
 
-        # With pages waiting for OCR the document stays PROCESSING; the OCR job completes it.
-        if not ocr_pending:
+        # The document stays PROCESSING while a later job (OCR, then extraction) still has work.
+        next_job = _after_ingest(ocr_pending)
+        if next_job is None:
             document.status = DocumentStatus.COMPLETED
         session.add(_event(document_id, "succeeded", attempt, started))
         await session.commit()
-        if ocr_pending:
-            # After the commit, so the OCR job always finds the saved pages. If queueing fails
+        if next_job is not None:
+            # After the commit, so the next job always finds the saved pages. If queueing fails
             # the exception retries this whole (idempotent) job.
-            ocr_document.delay(str(document_id))
+            next_job.delay(str(document_id))
 
 
 async def _run_ocr(document_id: uuid.UUID, attempt: int) -> None:
@@ -166,8 +208,53 @@ async def _run_ocr(document_id: uuid.UUID, attempt: int) -> None:
             await session.commit()
             raise
 
-        document.status = DocumentStatus.COMPLETED
+        extract_next = _extraction_enabled()
+        if not extract_next:
+            document.status = DocumentStatus.COMPLETED
         session.add(_event(document_id, "succeeded", attempt, started, stage=OCR_STAGE))
+        await session.commit()
+        if extract_next:
+            extract_document.delay(str(document_id))
+
+
+async def _run_extract(document_id: uuid.UUID, attempt: int) -> None:
+    async with worker_session() as session:
+        document = await session.get(Document, document_id)
+        if document is None:
+            return
+
+        started = time.perf_counter()
+        session.add(_event(document_id, "started", attempt, stage=EXTRACT_STAGE))
+        await session.commit()
+
+        try:
+            settings = get_settings()
+            # Sets COMPLETED or NEEDS_REVIEW itself, from the validation result.
+            await run_extraction(
+                session,
+                document,
+                build_extractor(settings),
+                datetime.now(UTC).date(),
+                settings.low_confidence_threshold,
+            )
+        except Exception as exc:
+            log.exception("extract_attempt_failed", document_id=str(document_id), attempt=attempt)
+            await session.rollback()  # a failed database call leaves the session unusable
+            session.add(
+                _event(
+                    document_id,
+                    "failed",
+                    attempt,
+                    started,
+                    "extraction_failed",
+                    type(exc).__name__,
+                    stage=EXTRACT_STAGE,
+                )
+            )
+            await session.commit()
+            raise
+
+        session.add(_event(document_id, "succeeded", attempt, started, stage=EXTRACT_STAGE))
         await session.commit()
 
 

@@ -1,5 +1,5 @@
 import uuid
-from collections.abc import Callable, Iterator
+from collections.abc import Callable, Iterator, Sequence
 from typing import Any
 
 import pytest
@@ -7,12 +7,15 @@ from celery import Task
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import get_settings
 from app.db.models import Document, DocumentStatus, Page, ProcessingEvent
+from app.llm.extract import ExtractedInvoice, InvoiceExtractor
 from tests import image_samples as images
 from tests import pdf_samples as samples
 from tests import spreadsheet_samples as sheets
 from tests.fakes import FakeStorage
 from tests.helpers import make_document, run_sync, with_session
+from tests.invoice_fakes import TEXT, FakeExtractor, draft
 
 # These tests are synchronous on purpose: the task calls asyncio.run() itself, which cannot
 # run inside pytest-asyncio's already-running loop.
@@ -428,3 +431,172 @@ def test_each_file_type_is_routed_to_its_own_ingest(
     run_sync(tasks.run_pipeline(unused, unused, make_document(source_type=source_type)))
 
     assert called == [expected]
+
+
+# --- extraction after the text is ready ---------------------------------------------------
+
+
+@pytest.fixture
+def with_api_key(ingest: Task, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Turn extraction on: it only runs when a Google API key is configured."""
+    monkeypatch.setenv("GOOGLE_API_KEY", "test-key")
+    get_settings.cache_clear()  # settings are cached; the `db` fixture clears them again after
+
+
+@pytest.fixture
+def extract_queue(ingest: Task, monkeypatch: pytest.MonkeyPatch) -> list[str]:
+    """Ids of the documents queued for extraction, instead of sending them to a broker."""
+    import app.workers.tasks as tasks
+
+    queued: list[str] = []
+    monkeypatch.setattr(
+        tasks.extract_document, "delay", lambda document_id: queued.append(document_id)
+    )
+    return queued
+
+
+@pytest.fixture
+def extract(ingest: Task) -> Task:
+    import app.workers.tasks as tasks
+
+    return tasks.extract_document
+
+
+def use_extractor(monkeypatch: pytest.MonkeyPatch, extractor: InvoiceExtractor) -> None:
+    import app.workers.tasks as tasks
+
+    monkeypatch.setattr(tasks, "build_extractor", lambda settings: extractor)
+
+
+def document_with_text(db: str, text: str = TEXT) -> uuid.UUID:
+    """A document whose text is ready: the state in which the extraction job starts."""
+    document_id = queued_document(db, source_type="pdf", status=DocumentStatus.PROCESSING)
+
+    async def add_page(session: AsyncSession) -> None:
+        session.add(Page(document_id=document_id, page_no=1, text=text, method="native"))
+        await session.commit()
+
+    with_session(db, add_page)
+    return document_id
+
+
+def test_with_a_key_a_text_document_waits_for_extraction(
+    db: str,
+    ingest: Task,
+    with_api_key: None,
+    extract_queue: list[str],
+    storage: FakeStorage,
+) -> None:
+    document_id = pdf_document(db, storage, samples.text_pdf(2))
+
+    ingest.apply(args=[str(document_id)])
+
+    document, events = load(db, document_id)
+    assert document.status == DocumentStatus.PROCESSING
+    assert extract_queue == [str(document_id)]
+    assert [(e.stage, e.status) for e in events] == [("ingest", "started"), ("ingest", "succeeded")]
+
+
+def test_a_scanned_document_is_extracted_only_after_ocr(
+    db: str,
+    ingest: Task,
+    ocr: Task,
+    ocr_queue: list[str],
+    with_api_key: None,
+    extract_queue: list[str],
+    storage: FakeStorage,
+) -> None:
+    document_id = image_document(db, storage, images.encode(images.text_image()))
+
+    ingest.apply(args=[str(document_id)])
+    assert ocr_queue == [str(document_id)] and extract_queue == []
+
+    ocr.apply(args=[str(document_id)])
+
+    assert extract_queue == [str(document_id)]
+    assert load(db, document_id)[0].status == DocumentStatus.PROCESSING
+
+
+def test_without_a_key_nothing_is_queued_for_extraction(
+    db: str, ingest: Task, extract_queue: list[str], storage: FakeStorage
+) -> None:
+    document_id = pdf_document(db, storage, samples.text_pdf(2))
+
+    ingest.apply(args=[str(document_id)])
+
+    assert extract_queue == []
+    assert load(db, document_id)[0].status == DocumentStatus.COMPLETED
+
+
+def test_the_extract_job_completes_the_document_and_records_its_events(
+    db: str, extract: Task, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    use_extractor(monkeypatch, FakeExtractor([draft()]))
+    document_id = document_with_text(db)
+
+    extract.apply(args=[str(document_id)])
+
+    document, events = load(db, document_id)
+    assert document.status == DocumentStatus.COMPLETED
+    assert [(e.stage, e.status, e.attempt) for e in events] == [
+        ("extract", "started", 1),
+        ("extract", "succeeded", 1),
+    ]
+
+
+def test_validation_can_send_the_document_for_review(
+    db: str, extract: Task, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    use_extractor(monkeypatch, FakeExtractor([draft(total="130.00")], TEXT + "\nTotal 130.00"))
+    document_id = document_with_text(db, TEXT + "\nTotal 130.00")
+
+    extract.apply(args=[str(document_id)])
+
+    assert load(db, document_id)[0].status == DocumentStatus.NEEDS_REVIEW
+
+
+class FlakyExtractor(FakeExtractor):
+    """Fails the first `failures` calls, then behaves like FakeExtractor."""
+
+    def __init__(self, failures: int) -> None:
+        super().__init__([draft()])
+        self.failures = failures
+
+    def extract(self, pages: Sequence[tuple[int, str]]) -> list[ExtractedInvoice]:
+        if self.failures > 0:
+            self.failures -= 1
+            raise RuntimeError("model is down")
+        return super().extract(pages)
+
+
+def test_a_model_error_is_retried_then_succeeds(
+    db: str, extract: Task, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    use_extractor(monkeypatch, FlakyExtractor(failures=1))
+    document_id = document_with_text(db)
+
+    extract.apply(args=[str(document_id)])
+
+    document, events = load(db, document_id)
+    assert document.status == DocumentStatus.COMPLETED
+    assert [(e.status, e.attempt) for e in events] == [
+        ("started", 1),
+        ("failed", 1),
+        ("started", 2),
+        ("succeeded", 2),
+    ]
+
+
+def test_exhausted_extraction_retries_fail_the_document(
+    db: str, extract: Task, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    use_extractor(monkeypatch, FlakyExtractor(failures=99))
+    document_id = document_with_text(db)
+
+    extract.apply(args=[str(document_id)])
+
+    document, events = load(db, document_id)
+    assert (document.status, document.error_code) == (DocumentStatus.FAILED, "extraction_failed")
+    assert document.error_message == "RuntimeError"
+    failed = [e.attempt for e in events if e.status == "failed" and e.stage == "extract"]
+    assert failed == list(range(1, extract.max_retries + 2))
