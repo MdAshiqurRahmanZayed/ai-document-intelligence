@@ -30,12 +30,18 @@ A document SHALL have exactly one status from `UPLOADED`, `QUEUED`, `PROCESSING`
 - **AND** one ingest job is queued for it
 
 ### Requirement: Background processing records progress
-The ingest job SHALL set the document to `PROCESSING` when it starts and to `COMPLETED` when it finishes, and SHALL record a processing event for each step with the stage, outcome, duration and attempt number.
+The ingest job SHALL set the document to `PROCESSING` when it starts and SHALL record a processing event for each step with the stage, outcome, duration and attempt number. The document SHALL become `COMPLETED` when all of its pages have their text: at the end of the ingest job when no page needs OCR, otherwise when the OCR job finishes, with the document staying `PROCESSING` in between.
 
 #### Scenario: Successful run
-- **WHEN** the ingest job runs for a queued document and succeeds
+- **WHEN** the ingest job runs for a queued document that needs no OCR and succeeds
 - **THEN** the document status is `COMPLETED`
 - **AND** the history contains a started event and a succeeded event for stage `ingest`, each with attempt 1
+
+#### Scenario: Document waiting for OCR
+- **WHEN** the ingest job succeeds for a document that has pages needing OCR
+- **THEN** the history contains a succeeded event for stage `ingest`
+- **AND** the document status is still `PROCESSING`
+- **AND** the document becomes `COMPLETED` only after the OCR job succeeds
 
 ### Requirement: Retries and failure reporting
 The ingest job SHALL retry a failing attempt with exponential backoff up to a fixed limit, and when retries are exhausted SHALL set the document to `FAILED` with an error code and message and record a failed event.

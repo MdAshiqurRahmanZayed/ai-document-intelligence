@@ -6,6 +6,10 @@ COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-dev
 
 FROM build AS test
+# Tesseract is the OCR engine; the English language data comes with the package.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends tesseract-ocr \
+    && rm -rf /var/lib/apt/lists/*
 RUN uv sync --frozen
 COPY alembic.ini ./
 COPY alembic ./alembic
@@ -15,6 +19,10 @@ ENV PATH="/app/.venv/bin:$PATH"
 CMD ["pytest"]
 
 FROM python:3.12-slim
+# Tesseract is the OCR engine; the English language data comes with the package.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends tesseract-ocr \
+    && rm -rf /var/lib/apt/lists/*
 RUN useradd --create-home --uid 1000 app
 WORKDIR /app
 COPY --from=build /app/.venv /app/.venv

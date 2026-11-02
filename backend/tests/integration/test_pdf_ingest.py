@@ -3,7 +3,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import Document, Page
-from app.services import pdf_ingest
+from app.services import pages as page_service
 from app.services.pdf_ingest import ingest_pdf
 from tests import pdf_samples as samples
 from tests.fakes import FakeStorage
@@ -83,7 +83,7 @@ async def test_failed_image_upload_leaves_no_row_pointing_at_it(session: AsyncSe
 async def test_pages_are_committed_in_batches(
     session: AsyncSession, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    monkeypatch.setattr(pdf_ingest, "BATCH_SIZE", 2)
+    monkeypatch.setattr(page_service, "BATCH_SIZE", 2)
     storage = FakeStorage()
     document = await stored(session, storage, samples.text_pdf(5))
     commits = 0
@@ -100,3 +100,17 @@ async def test_pages_are_committed_in_batches(
 
     assert commits == 1 + 3  # page_count, then batches of 2, 2 and 1
     assert len(await pages_of(session, document)) == 5
+
+
+async def test_rerun_clears_text_and_confidence_from_an_earlier_ocr(session: AsyncSession) -> None:
+    storage = FakeStorage()
+    document = await stored(session, storage, samples.scanned_pdf())
+    await ingest_pdf(session, storage, document)
+    (page,) = await pages_of(session, document)
+    page.text, page.method, page.ocr_confidence = "old ocr text", "ocr", 0.9
+    await session.commit()
+
+    await ingest_pdf(session, storage, document)
+
+    (page,) = await pages_of(session, document)
+    assert (page.text, page.method, page.ocr_confidence) == (None, "scanned", None)

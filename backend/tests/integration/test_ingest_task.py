@@ -8,6 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import Document, DocumentStatus, Page, ProcessingEvent
+from tests import image_samples as images
 from tests import pdf_samples as samples
 from tests.fakes import FakeStorage
 from tests.helpers import make_document, with_session
@@ -47,13 +48,31 @@ def storage(ingest: Task, monkeypatch: pytest.MonkeyPatch) -> FakeStorage:
     return fake
 
 
+@pytest.fixture
+def ocr_queue() -> list[str]:
+    """Ids of the documents the ingest job queued for OCR."""
+    return []
+
+
+@pytest.fixture
+def ocr(ingest: Task, ocr_queue: list[str], monkeypatch: pytest.MonkeyPatch) -> Task:
+    """The OCR task, with queueing replaced so ingest does not need a broker."""
+    import app.workers.tasks as tasks
+
+    monkeypatch.setattr(
+        tasks.ocr_document, "delay", lambda document_id: ocr_queue.append(document_id)
+    )
+    return tasks.ocr_document
+
+
 def queued_document(
     db: str, storage: FakeStorage | None = None, content: bytes | None = None, **fields: Any
 ) -> uuid.UUID:
     # Default is a spreadsheet: the pipeline does nothing for it yet, so these tests exercise
     # the task machinery without needing a stored file.
     fields.setdefault("source_type", "spreadsheet")
-    document = make_document(status=DocumentStatus.QUEUED, **fields)
+    fields.setdefault("status", DocumentStatus.QUEUED)
+    document = make_document(**fields)
     if storage is not None and content is not None:
         storage.objects[document.storage_key] = (content, document.mime)
 
@@ -216,3 +235,118 @@ def test_non_pdf_document_gets_no_pages(db: str, ingest: Task, storage: FakeStor
     document, _ = load(db, document_id)
     assert document.status == DocumentStatus.COMPLETED
     assert page_rows(db, document_id) == []
+
+
+def image_document(db: str, storage: FakeStorage, content: bytes) -> uuid.UUID:
+    return queued_document(db, storage, content, source_type="image", mime="image/png")
+
+
+def test_image_waits_for_ocr_then_completes(
+    db: str, ingest: Task, ocr: Task, ocr_queue: list[str], storage: FakeStorage
+) -> None:
+    document_id = image_document(db, storage, images.encode(images.text_image()))
+
+    ingest.apply(args=[str(document_id)])
+
+    document, events = load(db, document_id)
+    assert document.status == DocumentStatus.PROCESSING  # pages are waiting for OCR
+    assert ocr_queue == [str(document_id)]
+    assert [(e.stage, e.status) for e in events] == [("ingest", "started"), ("ingest", "succeeded")]
+
+    ocr.apply(args=[str(document_id)])
+
+    document, events = load(db, document_id)
+    (page,) = page_rows(db, document_id)
+    assert document.status == DocumentStatus.COMPLETED
+    assert page.method == "ocr" and "INVOICE" in (page.text or "")
+    assert [(e.stage, e.status) for e in events[2:]] == [("ocr", "started"), ("ocr", "succeeded")]
+
+
+def test_scanned_pdf_waits_for_ocr(db: str, ingest: Task, ocr: Task, storage: FakeStorage) -> None:
+    document_id = pdf_document(db, storage, samples.scanned_pdf())
+
+    ingest.apply(args=[str(document_id)])
+    assert load(db, document_id)[0].status == DocumentStatus.PROCESSING
+
+    ocr.apply(args=[str(document_id)])
+    assert load(db, document_id)[0].status == DocumentStatus.COMPLETED
+
+
+def test_pdf_with_text_queues_no_ocr_job(
+    db: str, ingest: Task, ocr: Task, ocr_queue: list[str], storage: FakeStorage
+) -> None:
+    document_id = pdf_document(db, storage, samples.text_pdf(2))
+
+    ingest.apply(args=[str(document_id)])
+
+    assert load(db, document_id)[0].status == DocumentStatus.COMPLETED
+    assert ocr_queue == []
+
+
+def test_truncated_image_fails_once_without_retry(
+    db: str, ingest: Task, storage: FakeStorage
+) -> None:
+    cut = images.truncated(images.encode(images.text_image(), "JPEG"))
+    document_id = image_document(db, storage, cut)
+
+    ingest.apply(args=[str(document_id)])
+
+    document, events = load(db, document_id)
+    assert (document.status, document.error_code) == (DocumentStatus.FAILED, "image_corrupt")
+    assert [(e.status, e.attempt, e.error_code) for e in events] == [
+        ("started", 1, None),
+        ("failed", 1, "image_corrupt"),
+    ]
+
+
+def processing_document(db: str) -> uuid.UUID:
+    return queued_document(db, source_type="image", status=DocumentStatus.PROCESSING)
+
+
+def test_ocr_error_is_retried_then_succeeds(
+    db: str, ocr: Task, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import app.workers.tasks as tasks
+
+    attempts = 0
+
+    async def flaky(session: AsyncSession, storage: Any, document: Document) -> None:
+        nonlocal attempts
+        attempts += 1
+        if attempts == 1:
+            raise RuntimeError("engine glitch")
+
+    monkeypatch.setattr(tasks, "ocr_pages", flaky)
+    monkeypatch.setattr(tasks, "build_s3_storage", lambda settings: FakeStorage())
+    document_id = processing_document(db)
+
+    ocr.apply(args=[str(document_id)])
+
+    document, events = load(db, document_id)
+    assert document.status == DocumentStatus.COMPLETED
+    assert [(e.stage, e.status, e.attempt) for e in events] == [
+        ("ocr", "started", 1),
+        ("ocr", "failed", 1),
+        ("ocr", "started", 2),
+        ("ocr", "succeeded", 2),
+    ]
+
+
+def test_exhausted_ocr_retries_mark_the_document_failed(
+    db: str, ocr: Task, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import app.workers.tasks as tasks
+
+    async def always_fails(session: AsyncSession, storage: Any, document: Document) -> None:
+        raise RuntimeError("engine is broken")
+
+    monkeypatch.setattr(tasks, "ocr_pages", always_fails)
+    monkeypatch.setattr(tasks, "build_s3_storage", lambda settings: FakeStorage())
+    document_id = processing_document(db)
+
+    ocr.apply(args=[str(document_id)])
+
+    document, events = load(db, document_id)
+    assert (document.status, document.error_code) == (DocumentStatus.FAILED, "ocr_failed")
+    failed = [e.attempt for e in events if e.status == "failed"]
+    assert failed == list(range(1, ocr.max_retries + 2))

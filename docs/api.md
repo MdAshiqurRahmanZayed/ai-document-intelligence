@@ -79,12 +79,14 @@ curl localhost:8000/api/v1/documents/3f2a…
   "updated_at": "2026-11-02T10:15:02Z",
   "events": [
     { "stage": "ingest", "status": "started",   "attempt": 1, "duration_ms": null, "error_code": null, "error_message": null, "created_at": "…" },
-    { "stage": "ingest", "status": "succeeded", "attempt": 1, "duration_ms": 12,   "error_code": null, "error_message": null, "created_at": "…" }
+    { "stage": "ingest", "status": "succeeded", "attempt": 1, "duration_ms": 12,   "error_code": null, "error_message": null, "created_at": "…" },
+    { "stage": "ocr",    "status": "started",   "attempt": 1, "duration_ms": null, "error_code": null, "error_message": null, "created_at": "…" },
+    { "stage": "ocr",    "status": "succeeded", "attempt": 1, "duration_ms": 1840, "error_code": null, "error_message": null, "created_at": "…" }
   ]
 }
 ```
 
-`events` is the processing history, oldest first. A failed attempt adds a `failed` event; its retry then adds a `started` event with the next `attempt` number.
+`events` is the processing history, oldest first. `stage` is `ingest` (reading the file and saving its pages) or `ocr` (reading the text of scanned pages and images; only present when a document has such pages). A failed attempt adds a `failed` event; its retry then adds a `started` event with the next `attempt` number.
 
 | Response | When |
 |---|---|
@@ -99,8 +101,8 @@ curl localhost:8000/api/v1/documents/3f2a…
 |---|---|
 | `UPLOADED` | Stored and recorded, not yet handed to the queue (brief) |
 | `QUEUED` | Waiting for a worker |
-| `PROCESSING` | A worker is running the job |
-| `COMPLETED` | Job finished |
+| `PROCESSING` | A worker is running a job. Stays `PROCESSING` between the ingest job and the OCR job when pages need OCR |
+| `COMPLETED` | All jobs finished (for files with scanned pages or images: after the OCR job) |
 | `NEEDS_REVIEW` | Reserved for validation (later phase) |
 | `FAILED` | Job failed after retries, or could not be queued. See `error_code` |
 
@@ -122,9 +124,11 @@ curl localhost:8000/api/v1/documents/3f2a…
 | `pdf_corrupt` | The PDF is damaged or truncated and cannot be opened. Not retried |
 | `pdf_encrypted` | The PDF needs a password. Not retried |
 | `pdf_empty` | The PDF opened but has no pages. Not retried |
-| `ingest_failed` | The job failed on every attempt (first try plus 3 retries); `error_message` holds the exception type |
+| `image_corrupt` | The image is damaged, truncated or too large to decode safely. Not retried |
+| `ingest_failed` | The ingest job failed on every attempt (first try plus 3 retries); `error_message` holds the exception type |
+| `ocr_failed` | The OCR job failed on every attempt (first try plus 3 retries); `error_message` holds the exception type |
 
-`page_count` is filled for PDFs once the file has been opened, so it is already set while the pages are still being read. It stays `null` for other file types.
+`page_count` is filled for PDFs and images (one per frame; a multi-frame TIFF has several) once the file has been opened, so it is already set while the pages are still being read. It stays `null` for other file types.
 
 ### Limits
 

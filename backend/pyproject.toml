@@ -16,6 +16,9 @@ dependencies = [
     "python-multipart>=0.0.33",
     "pypdfium2>=5.14.0",
     "pillow>=13.0.0",
+    "pytesseract>=0.3.13",
+    "opencv-python-headless>=5.0.0.93",
+    "numpy>=2.5.4",
 ]
 
 [dependency-groups]
@@ -48,7 +51,7 @@ asyncio_default_fixture_loop_scope = "function"
 testpaths = ["tests"]
 
 [[tool.mypy.overrides]]
-module = ["celery.*", "kombu.*", "openpyxl.*", "pypdfium2.*", "reportlab.*"]
+module = ["celery.*", "kombu.*", "openpyxl.*", "pypdfium2.*", "reportlab.*", "pytesseract.*"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
