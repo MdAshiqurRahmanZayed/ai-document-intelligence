@@ -5,18 +5,31 @@ from typing import Any
 
 import structlog
 from celery import Task
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import get_settings
 from app.db.models import Document, DocumentStatus, ProcessingEvent
 from app.db.session import worker_session
+from app.pipeline.pdf import PdfError
+from app.services.pdf_ingest import ingest_pdf
+from app.services.storage import Storage, build_s3_storage
 from app.workers.celery_app import celery_app
 
 log = structlog.get_logger()
 
 STAGE = "ingest"
 
+_PDF_MESSAGES = {
+    "pdf_corrupt": "The PDF is damaged and could not be read.",
+    "pdf_encrypted": "The PDF is password-protected.",
+    "pdf_empty": "The PDF has no pages.",
+}
 
-async def run_pipeline(document: Document) -> None:
-    """Extension point. Later changes (PDF, OCR, spreadsheets) plug their work in here."""
+
+async def run_pipeline(session: AsyncSession, storage: Storage, document: Document) -> None:
+    """Dispatch by document type. Later changes (OCR, spreadsheets) add their branches here."""
+    if document.source_type == "pdf":
+        await ingest_pdf(session, storage, document)
 
 
 class IngestTask(Task):
@@ -58,11 +71,23 @@ async def _run(document_id: uuid.UUID, attempt: int) -> None:
         await session.commit()
 
         try:
-            await run_pipeline(document)
+            await run_pipeline(session, build_s3_storage(get_settings()), document)
+        except PdfError as exc:
+            # The file itself is unusable, so retrying cannot help: fail now and do not re-raise
+            # (re-raising would hand it to Celery's retry policy).
+            log.warning("pdf_unusable", document_id=str(document_id), code=exc.code)
+            document.status = DocumentStatus.FAILED
+            document.error_code = exc.code
+            document.error_message = _PDF_MESSAGES[exc.code]
+            session.add(_event(document_id, "failed", attempt, started, exc.code, exc.code))
+            await session.commit()
+            return
         except Exception as exc:
             # Record the attempt, then re-raise so Celery's retry policy takes over.
             log.exception("ingest_attempt_failed", document_id=str(document_id), attempt=attempt)
-            session.add(_event(document_id, "failed", attempt, started, exc))
+            session.add(
+                _event(document_id, "failed", attempt, started, "ingest_failed", type(exc).__name__)
+            )
             await session.commit()
             raise
 
@@ -88,7 +113,8 @@ def _event(
     status: str,
     attempt: int,
     started: float | None = None,
-    exc: Exception | None = None,
+    error_code: str | None = None,
+    error_message: str | None = None,
 ) -> ProcessingEvent:
     return ProcessingEvent(
         document_id=document_id,
@@ -96,6 +122,6 @@ def _event(
         status=status,
         attempt=attempt,
         duration_ms=None if started is None else round((time.perf_counter() - started) * 1000),
-        error_code=None if exc is None else "ingest_failed",
-        error_message=None if exc is None else type(exc).__name__,
+        error_code=error_code,
+        error_message=error_message,
     )

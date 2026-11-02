@@ -20,6 +20,8 @@ _TRANSFER = TransferConfig(multipart_threshold=CHUNK_SIZE, multipart_chunksize=C
 class Storage(Protocol):
     async def put(self, key: str, fileobj: BinaryIO, content_type: str) -> None: ...
 
+    async def download(self, key: str, fileobj: BinaryIO) -> None: ...
+
     async def delete(self, key: str) -> None: ...
 
     def presigned_url(self, key: str, expires: int = 300) -> str: ...
@@ -39,6 +41,12 @@ class S3Storage:
             key,
             ExtraArgs={"ContentType": content_type},
             Config=_TRANSFER,
+        )
+
+    async def download(self, key: str, fileobj: BinaryIO) -> None:
+        # Streams into the caller's file in CHUNK_SIZE parts, so large PDFs never sit in memory.
+        await asyncio.to_thread(
+            self._client.download_fileobj, self._bucket, key, fileobj, Config=_TRANSFER
         )
 
     async def delete(self, key: str) -> None:

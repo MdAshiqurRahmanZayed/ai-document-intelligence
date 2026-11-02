@@ -72,7 +72,7 @@ curl localhost:8000/api/v1/documents/3f2a…
   "size": 48213,
   "status": "COMPLETED",
   "source_type": "pdf",
-  "page_count": null,
+  "page_count": 2,
   "error_code": null,
   "error_message": null,
   "created_at": "2026-11-02T10:15:00Z",
@@ -119,7 +119,12 @@ curl localhost:8000/api/v1/documents/3f2a…
 | Code | Meaning |
 |---|---|
 | `queue_unavailable` | The job could not be queued at upload time |
+| `pdf_corrupt` | The PDF is damaged or truncated and cannot be opened. Not retried |
+| `pdf_encrypted` | The PDF needs a password. Not retried |
+| `pdf_empty` | The PDF opened but has no pages. Not retried |
 | `ingest_failed` | The job failed on every attempt (first try plus 3 retries); `error_message` holds the exception type |
+
+`page_count` is filled for PDFs once the file has been opened, so it is already set while the pages are still being read. It stays `null` for other file types.
 
 ### Limits
 

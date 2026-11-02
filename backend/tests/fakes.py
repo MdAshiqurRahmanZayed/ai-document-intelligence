@@ -14,6 +14,9 @@ class FakeStorage:
             raise RuntimeError("storage is down")
         self.objects[key] = (fileobj.read(), content_type)
 
+    async def download(self, key: str, fileobj: BinaryIO) -> None:
+        fileobj.write(self.objects[key][0])
+
     async def delete(self, key: str) -> None:
         self.objects.pop(key, None)
 

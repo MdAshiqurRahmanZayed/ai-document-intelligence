@@ -21,6 +21,16 @@ async def test_put_sends_content_type_and_uses_chunk_size() -> None:
     assert kwargs["Config"].multipart_chunksize == CHUNK_SIZE
 
 
+async def test_download_streams_into_the_file_with_chunk_size() -> None:
+    client = MagicMock()
+    sink = io.BytesIO()
+    await S3Storage(client, "documents").download("raw/x/original.pdf", sink)
+
+    args, kwargs = client.download_fileobj.call_args
+    assert args == ("documents", "raw/x/original.pdf", sink)
+    assert kwargs["Config"].multipart_chunksize == CHUNK_SIZE
+
+
 async def test_delete_removes_the_object() -> None:
     client = MagicMock()
     await S3Storage(client, "documents").delete("raw/x/original.pdf")

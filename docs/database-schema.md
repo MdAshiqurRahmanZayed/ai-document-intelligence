@@ -50,9 +50,9 @@ erDiagram
         uuid document_id FK "cascade delete"
         integer page_no "unique with document_id"
         text text "nullable, extracted text"
-        varchar method "nullable: native ocr vision"
+        varchar method "nullable: native scanned ocr vision"
         float ocr_confidence "nullable"
-        varchar image_key "nullable, page image in storage"
+        varchar image_key "nullable, pages/id/page_no.png"
     }
 
     processing_events {
@@ -79,6 +79,9 @@ Constraints and indexes:
 Rules worth knowing:
 - Deleting a document deletes its pages and events (database-level cascade).
 - `status` is a plain string checked in code (`DocumentStatus`), so new statuses need no migration.
+- `pages.method`: `native` (text read from the PDF), `scanned` (almost no text, waiting for OCR: `text` is null and `image_key` is set), `ocr` and `vision` (set by later changes).
+- Only scanned pages get an image, stored at `pages/<document_id>/<page_no>.png` (300 DPI PNG). Text pages are not rendered.
+- Re-processing a document updates its page rows in place (upsert on `(document_id, page_no)`).
 - Storage keys are built from the document id and a type-derived extension, never from the client filename.
 
 ## Planned entities

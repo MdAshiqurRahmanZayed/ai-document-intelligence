@@ -7,7 +7,7 @@ Processes invoices/receipts from PDF, scanned PDF, JPG/PNG/TIFF, XLSX/XLS, and C
 - **Jobs:** Celery + Redis (queues: `ingest`, `ocr`, `llm`, `embed`)
 - **DB:** PostgreSQL 16 + pgvector (FTS via `tsvector`/GIN, vectors via HNSW)
 - **Storage:** SeaweedFS (S3 API via `boto3`; any S3-compatible server works); DB stores only `storage_key`
-- **Docs/OCR:** PyMuPDF, pdfplumber, pikepdf, Tesseract (`pytesseract`), OpenCV, Pillow
+- **Docs/OCR:** pypdfium2 (PDF text + page rendering), Tesseract (`pytesseract`), OpenCV, Pillow
 - **Spreadsheets:** pandas, openpyxl, xlrd, charset-normalizer
 - **LLM:** Gemini via LangChain (`langchain-google-genai`), `with_structured_output(Pydantic)`, embeddings via `GoogleGenerativeAIEmbeddings`
 - **Frontend:** Next.js (App Router) + TypeScript + Tailwind v4 — no shadcn; own components in `frontend/src/components/ui/`. TanStack Query, react-hook-form + zod.
