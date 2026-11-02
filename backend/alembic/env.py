@@ -7,13 +7,14 @@ from sqlalchemy.ext.asyncio import create_async_engine
 
 from alembic import context
 from app.core.config import get_settings
+from app.db import models  # noqa: F401  (registers the tables on Base.metadata)
+from app.db.base import Base
 
 config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name, disable_existing_loggers=False)
 
-# Set to the models' MetaData once models exist (Phase 1).
-target_metadata = None
+target_metadata = Base.metadata
 
 db_url = get_settings().database_url.get_secret_value()
 
