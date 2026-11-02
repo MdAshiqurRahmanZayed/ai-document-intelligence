@@ -58,6 +58,11 @@ def test_unreadable_dates_are_none(text: str | None) -> None:
         ("€", "EUR"),
         ("$", "USD"),
         ("£", "GBP"),
+        ("৳", "BDT"),  # the taka sign
+        ("Tk", "BDT"),
+        ("Tk.", "BDT"),
+        ("TAKA", "BDT"),
+        ("bdt", "BDT"),
         ("eur", "EUR"),
         (" usd ", "USD"),
         ("kr", "kr"),  # ambiguous: kept for validation to flag

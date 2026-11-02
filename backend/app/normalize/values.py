@@ -9,7 +9,9 @@ from decimal import Decimal, InvalidOperation
 
 import dateparser
 
-_CURRENCY_SYMBOLS = {"€": "EUR", "$": "USD", "£": "GBP"}
+_CURRENCY_SYMBOLS = {"€": "EUR", "$": "USD", "£": "GBP", "৳": "BDT"}
+# Written forms that are not ISO codes. "Tk" is the usual short form of the Bangladeshi taka.
+_CURRENCY_WORDS = {"tk": "BDT", "tk.": "BDT", "taka": "BDT"}
 # Company-form words dropped from the end of a name so "Acme Ltd." and "ACME" compare equal.
 _COMPANY_FORMS = {
     "ab", "ag", "as", "bv", "co", "corp", "corporation", "gmbh", "inc", "incorporated",
@@ -71,12 +73,14 @@ def parse_date(value: str | None) -> date | None:
 
 
 def normalize_currency(value: str | None) -> str | None:
-    """Map €, $ and £ to ISO 4217 codes and upper-case codes; keep anything else as given."""
+    """Map €, $, £, ৳ and Tk to ISO 4217 codes and upper-case codes; keep anything else as given."""
     if not value or not value.strip():
         return None
     text = value.strip()
     if text in _CURRENCY_SYMBOLS:
         return _CURRENCY_SYMBOLS[text]
+    if text.casefold() in _CURRENCY_WORDS:
+        return _CURRENCY_WORDS[text.casefold()]
     # Not forced to a valid code: validation reports an unknown currency instead of hiding it.
     return text.upper() if text.isalpha() and len(text) == 3 else text
 
