@@ -13,6 +13,7 @@ dependencies = [
     "redis",
     "celery",
     "boto3",
+    "python-multipart>=0.0.33",
 ]
 
 [dependency-groups]
@@ -23,6 +24,7 @@ dev = [
     "ruff",
     "mypy",
     "boto3-stubs[s3]",
+    "openpyxl>=3.1.5",
 ]
 
 [tool.ruff]
@@ -43,9 +45,10 @@ asyncio_default_fixture_loop_scope = "function"
 testpaths = ["tests"]
 
 [[tool.mypy.overrides]]
-module = ["celery.*", "kombu.*"]
+module = ["celery.*", "kombu.*", "openpyxl.*"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = ["app.workers.*"]
 disallow_untyped_decorators = false
+disallow_subclassing_any = false
