@@ -1,4 +1,4 @@
-.PHONY: help up dev down logs migrate flower test e2e bench lint check eval
+.PHONY: help up dev down logs migrate flower test e2e bench lint check eval eval-report
 
 help: ## List targets
 	@grep -hE '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-12s %s\n", $$1, $$2}'
@@ -23,7 +23,7 @@ flower: ## Start the Flower worker dashboard (login from FLOWER_USER / FLOWER_PA
 	@echo "Flower: http://localhost:$${FLOWER_PORT:-5555}"
 
 test: ## Run backend and frontend tests (in Docker)
-	@docker compose --profile test run --build --rm backend-test; status=$$?; \
+	@docker compose --profile test run --build --rm backend-test sh -c "pytest && pytest /eval/tests"; status=$$?; \
 	docker compose --profile test rm -sf postgres-test >/dev/null 2>&1; \
 	[ $$status -eq 0 ] || exit $$status
 	docker compose --profile test run --build --rm web-test
@@ -37,14 +37,18 @@ bench: ## Run the slow large-document benchmarks (in Docker)
 	exit $$status
 
 lint: ## Lint and typecheck backend and frontend (in Docker)
-	docker compose --profile test run --build --no-deps --rm backend-test sh -c "ruff check . && ruff format --check . && mypy app tests"
+	docker compose --profile test run --build --no-deps --rm backend-test sh -c "ruff check . && ruff format --check . && mypy app tests && ruff check --config pyproject.toml /eval && ruff format --check --config pyproject.toml /eval"
 	docker compose --profile test run --build --rm web-test sh -c "npm run lint && npm run typecheck"
 
 check: ## Lint, typecheck and test everything (in Docker): one build and one database start per side
-	@docker compose --profile test run --build --rm backend-test sh -c "ruff check . && ruff format --check . && mypy app tests && pytest"; status=$$?; \
+	@docker compose --profile test run --build --rm backend-test sh -c "ruff check . && ruff format --check . && mypy app tests && ruff check --config pyproject.toml /eval && ruff format --check --config pyproject.toml /eval && pytest && pytest /eval/tests"; status=$$?; \
 	docker compose --profile test rm -sf postgres-test >/dev/null 2>&1; \
 	[ $$status -eq 0 ] || exit $$status
 	docker compose --profile test run --build --rm web-test sh -c "npm run lint && npm run typecheck && npm test"
 
-eval: ## Run the evaluation harness (added in Phase 6)
-	@echo "Evaluation harness is not implemented yet (Phase 6)."
+eval: ## Evaluate on the labelled dataset (stack up, empty DB, GOOGLE_API_KEY set; ARGS="--only pdf --resume")
+	@test -d eval/dataset/documents || (cd backend && uv run python ../eval/build_dataset.py)
+	cd backend && uv run python ../eval/run_eval.py $(ARGS)
+
+eval-report: ## Rebuild eval/results/report.md from results.json (no stack or key needed)
+	cd backend && uv run python ../eval/run_eval.py --rescore

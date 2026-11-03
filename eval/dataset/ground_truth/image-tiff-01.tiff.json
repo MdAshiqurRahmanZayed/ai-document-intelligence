@@ -1,0 +1,21 @@
+{
+  "category": "tiff",
+  "expected_findings": [],
+  "expected_outcome": "success",
+  "file": "image-tiff-01.tiff",
+  "group": "image",
+  "invoices": [
+    {
+      "currency": "USD",
+      "customer_name": "Wayne Holdings",
+      "invoice_date": "2026-10-21",
+      "invoice_number": "EV-1017",
+      "line_items_count": 4,
+      "line_items_sum": "3032.27",
+      "subtotal": "3032.27",
+      "supplier_name": "TechMart Electronics Inc",
+      "tax": "265.32",
+      "total": "3297.59"
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "category": "csv",
+  "expected_findings": [],
+  "expected_outcome": "success",
+  "file": "sheet-csv-01.csv",
+  "group": "spreadsheet",
+  "invoices": [
+    {
+      "currency": "CAD",
+      "customer_name": "Contoso Retail GmbH",
+      "invoice_date": "2026-07-25",
+      "invoice_number": "EV-1019",
+      "line_items_count": 2,
+      "line_items_sum": "1741.36",
+      "subtotal": null,
+      "supplier_name": "GreenLeaf Cleaning Services",
+      "tax": null,
+      "total": "1967.74"
+    },
+    {
+      "currency": "EUR",
+      "customer_name": "Umbrella Logistics",
+      "invoice_date": "2026-09-25",
+      "invoice_number": "EV-1020",
+      "line_items_count": 2,
+      "line_items_sum": "143.07",
+      "subtotal": null,
+      "supplier_name": "Northwind Supplies Ltd",
+      "tax": null,
+      "total": "175.98"
+    }
+  ]
+}

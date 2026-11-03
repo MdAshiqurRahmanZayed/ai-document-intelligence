@@ -1,0 +1,21 @@
+{
+  "category": "jpg",
+  "expected_findings": [],
+  "expected_outcome": "success",
+  "file": "image-jpg-03.jpg",
+  "group": "image",
+  "invoices": [
+    {
+      "currency": "GBP",
+      "customer_name": "Contoso Retail GmbH",
+      "invoice_date": "2026-09-25",
+      "invoice_number": "EV-1013",
+      "line_items_count": 1,
+      "line_items_sum": "3961.51",
+      "subtotal": "3961.51",
+      "supplier_name": "Orbit Engineering Co",
+      "tax": null,
+      "total": "3961.51"
+    }
+  ]
+}

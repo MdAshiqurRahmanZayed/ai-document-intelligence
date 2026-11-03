@@ -1,0 +1,8 @@
+{
+  "category": "failure",
+  "expected_findings": [],
+  "expected_outcome": "rejected:empty_file",
+  "file": "failure-empty.pdf",
+  "group": "failures",
+  "invoices": []
+}

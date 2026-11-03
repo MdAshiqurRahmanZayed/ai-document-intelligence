@@ -1,0 +1,21 @@
+{
+  "category": "scanned_pdf",
+  "expected_findings": [],
+  "expected_outcome": "success",
+  "file": "scanned-03.pdf",
+  "group": "pdf",
+  "invoices": [
+    {
+      "currency": "EUR",
+      "customer_name": null,
+      "invoice_date": "2026-09-01",
+      "invoice_number": "EV-1010",
+      "line_items_count": 2,
+      "line_items_sum": "106.14",
+      "subtotal": "106.14",
+      "supplier_name": "Northwind Supplies Ltd",
+      "tax": "24.41",
+      "total": "130.55"
+    }
+  ]
+}

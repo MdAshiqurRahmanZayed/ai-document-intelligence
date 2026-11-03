@@ -201,6 +201,10 @@ services:
     image: ai-document-intelligence-backend-test:local
     environment:
       TEST_DATABASE_URL: postgresql+asyncpg://test:test@postgres-test:5432/test
+    # The evaluation tests (eval/tests) build the dataset with the sample generator in backend/scripts.
+    volumes:
+      - ./eval:/eval:ro
+      - ./backend/scripts:/app/scripts:ro
     depends_on:
       postgres-test:
         condition: service_healthy

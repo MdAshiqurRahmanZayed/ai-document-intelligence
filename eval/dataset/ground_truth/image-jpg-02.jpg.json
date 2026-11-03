@@ -1,0 +1,21 @@
+{
+  "category": "jpg",
+  "expected_findings": [],
+  "expected_outcome": "success",
+  "file": "image-jpg-02.jpg",
+  "group": "image",
+  "invoices": [
+    {
+      "currency": "SEK",
+      "customer_name": "Hooli Media",
+      "invoice_date": "2026-07-09",
+      "invoice_number": "EV-1012",
+      "line_items_count": 2,
+      "line_items_sum": "34610.94",
+      "subtotal": "34610.94",
+      "supplier_name": "Cirrus Cloud Services AB",
+      "tax": "8652.74",
+      "total": "43263.68"
+    }
+  ]
+}

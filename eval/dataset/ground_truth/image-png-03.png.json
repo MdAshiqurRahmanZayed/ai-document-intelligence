@@ -1,0 +1,21 @@
+{
+  "category": "png",
+  "expected_findings": [],
+  "expected_outcome": "success",
+  "file": "image-png-03.png",
+  "group": "image",
+  "invoices": [
+    {
+      "currency": "GBP",
+      "customer_name": "Contoso Retail GmbH",
+      "invoice_date": "2026-10-05",
+      "invoice_number": "EV-1016",
+      "line_items_count": 2,
+      "line_items_sum": "536.67",
+      "subtotal": "536.67",
+      "supplier_name": "Harlow & Finch Solicitors",
+      "tax": "107.33",
+      "total": "644.00"
+    }
+  ]
+}

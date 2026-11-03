@@ -1,0 +1,45 @@
+{
+  "category": "digital_pdf",
+  "expected_findings": [],
+  "expected_outcome": "success",
+  "file": "digital-06.pdf",
+  "group": "pdf",
+  "invoices": [
+    {
+      "currency": "AUD",
+      "customer_name": "Globex Ltd",
+      "invoice_date": "2026-07-22",
+      "invoice_number": "EV-1005",
+      "line_items_count": 4,
+      "line_items_sum": "17620.92",
+      "subtotal": "17620.92",
+      "supplier_name": "Pixel Forge Studio",
+      "tax": "1762.09",
+      "total": "19383.01"
+    },
+    {
+      "currency": "GBP",
+      "customer_name": "Fabrikam Studio",
+      "invoice_date": "2026-08-10",
+      "invoice_number": "EV-1006",
+      "line_items_count": 2,
+      "line_items_sum": "5724.85",
+      "subtotal": "5724.85",
+      "supplier_name": "Harlow & Finch Solicitors",
+      "tax": "1144.97",
+      "total": "6869.82"
+    },
+    {
+      "currency": "USD",
+      "customer_name": "Umbrella Logistics",
+      "invoice_date": "2026-09-22",
+      "invoice_number": "EV-1007",
+      "line_items_count": 1,
+      "line_items_sum": "1089.92",
+      "subtotal": "1089.92",
+      "supplier_name": "TechMart Electronics Inc",
+      "tax": "95.37",
+      "total": "1185.29"
+    }
+  ]
+}

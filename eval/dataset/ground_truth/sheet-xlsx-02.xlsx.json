@@ -1,0 +1,21 @@
+{
+  "category": "xlsx",
+  "expected_findings": [],
+  "expected_outcome": "success",
+  "file": "sheet-xlsx-02.xlsx",
+  "group": "spreadsheet",
+  "invoices": [
+    {
+      "currency": "GBP",
+      "customer_name": "Globex Ltd",
+      "invoice_date": "2026-07-01",
+      "invoice_number": "EV-1026",
+      "line_items_count": 2,
+      "line_items_sum": "542.55",
+      "subtotal": null,
+      "supplier_name": "Harlow & Finch Solicitors",
+      "tax": null,
+      "total": "651.06"
+    }
+  ]
+}

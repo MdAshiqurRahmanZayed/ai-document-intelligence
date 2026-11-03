@@ -1,0 +1,21 @@
+{
+  "category": "digital_pdf",
+  "expected_findings": [],
+  "expected_outcome": "success",
+  "file": "digital-04.pdf",
+  "group": "pdf",
+  "invoices": [
+    {
+      "currency": "GBP",
+      "customer_name": "Contoso Retail GmbH",
+      "invoice_date": "2026-10-07",
+      "invoice_number": "EV-1003",
+      "line_items_count": 2,
+      "line_items_sum": "9085.86",
+      "subtotal": "9085.86",
+      "supplier_name": "Orbit Engineering Co",
+      "tax": "1817.17",
+      "total": "10903.03"
+    }
+  ]
+}

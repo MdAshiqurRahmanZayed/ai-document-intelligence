@@ -1,0 +1,24 @@
+{
+  "category": {
+    "csv": 3,
+    "digital_pdf": 6,
+    "failure": 4,
+    "jpg": 3,
+    "png": 3,
+    "scanned_pdf": 3,
+    "seeded_error": 4,
+    "tiff": 2,
+    "xls": 2,
+    "xlsx": 3
+  },
+  "total": 33,
+  "type": {
+    "csv": 3,
+    "jpg": 3,
+    "pdf": 17,
+    "png": 3,
+    "tiff": 2,
+    "xls": 2,
+    "xlsx": 3
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "category": "scanned_pdf",
+  "expected_findings": [],
+  "expected_outcome": "success",
+  "file": "scanned-01.pdf",
+  "group": "pdf",
+  "invoices": [
+    {
+      "currency": "NOK",
+      "customer_name": "Contoso Retail GmbH",
+      "invoice_date": "2026-09-21",
+      "invoice_number": "EV-1008",
+      "line_items_count": 2,
+      "line_items_sum": "8570.04",
+      "subtotal": "8570.04",
+      "supplier_name": "Fjord Catering AS",
+      "tax": "2142.51",
+      "total": "10712.55"
+    }
+  ]
+}

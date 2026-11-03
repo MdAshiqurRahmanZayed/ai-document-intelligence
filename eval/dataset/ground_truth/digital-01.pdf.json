@@ -1,0 +1,21 @@
+{
+  "category": "digital_pdf",
+  "expected_findings": [],
+  "expected_outcome": "success",
+  "file": "digital-01.pdf",
+  "group": "pdf",
+  "invoices": [
+    {
+      "currency": "EUR",
+      "customer_name": "Hooli Media",
+      "invoice_date": "2026-09-16",
+      "invoice_number": "EV-1000",
+      "line_items_count": 2,
+      "line_items_sum": "396.95",
+      "subtotal": "396.95",
+      "supplier_name": "Northwind Supplies Ltd",
+      "tax": "91.30",
+      "total": "488.25"
+    }
+  ]
+}

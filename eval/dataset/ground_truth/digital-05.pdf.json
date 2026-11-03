@@ -1,0 +1,21 @@
+{
+  "category": "digital_pdf",
+  "expected_findings": [],
+  "expected_outcome": "success",
+  "file": "digital-05.pdf",
+  "group": "pdf",
+  "invoices": [
+    {
+      "currency": "EUR",
+      "customer_name": null,
+      "invoice_date": "2026-10-22",
+      "invoice_number": "EV-1004",
+      "line_items_count": 3,
+      "line_items_sum": "16065.21",
+      "subtotal": "16065.21",
+      "supplier_name": "Meridian Freight GmbH",
+      "tax": "3052.39",
+      "total": "19117.60"
+    }
+  ]
+}
