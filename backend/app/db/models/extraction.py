@@ -111,3 +111,22 @@ class CrossCheck(Base):
     status: Mapped[str] = mapped_column(String(20))  # match | mismatch | unmatched
     diffs: Mapped[list[dict[str, Any]]] = mapped_column(JSONB)  # [{field, left, right}]
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class Correction(Base):
+    """One field changed by a person. `extraction_id` is the version that holds the new value."""
+
+    __tablename__ = "corrections"
+    __table_args__ = (Index("ix_corrections_document_id_created_at", "document_id", "created_at"),)
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    document_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("documents.id", ondelete="CASCADE"))
+    extraction_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("extractions.id", ondelete="CASCADE")
+    )
+    field: Mapped[str] = mapped_column(String(50))
+    # Text: the string form of a value, JSON for line items, NULL for empty.
+    old_value: Mapped[str | None] = mapped_column(Text)
+    new_value: Mapped[str | None] = mapped_column(Text)
+    edited_by: Mapped[str] = mapped_column(String(100))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
