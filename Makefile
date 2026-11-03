@@ -1,4 +1,4 @@
-.PHONY: help up dev down logs migrate test bench lint eval
+.PHONY: help up dev down logs migrate test bench lint check eval
 
 help: ## List targets
 	@grep -hE '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-12s %s\n", $$1, $$2}'
@@ -32,6 +32,12 @@ bench: ## Run the slow large-document benchmarks (in Docker)
 lint: ## Lint and typecheck backend and frontend (in Docker)
 	docker compose --profile test run --build --no-deps --rm backend-test sh -c "ruff check . && ruff format --check . && mypy app tests"
 	docker compose --profile test run --build --rm web-test sh -c "npm run lint && npm run typecheck"
+
+check: ## Lint, typecheck and test everything (in Docker): one build and one database start per side
+	@docker compose --profile test run --build --rm backend-test sh -c "ruff check . && ruff format --check . && mypy app tests && pytest"; status=$$?; \
+	docker compose --profile test rm -sf postgres-test >/dev/null 2>&1; \
+	[ $$status -eq 0 ] || exit $$status
+	docker compose --profile test run --build --rm web-test sh -c "npm run lint && npm run typecheck && npm test"
 
 eval: ## Run the evaluation harness (added in Phase 6)
 	@echo "Evaluation harness is not implemented yet (Phase 6)."

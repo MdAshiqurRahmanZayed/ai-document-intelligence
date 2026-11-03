@@ -186,7 +186,7 @@ services:
     profiles: [test]
     build:
       context: ./frontend
-      target: build
+      target: test
     image: ai-document-intelligence-web-test:local
     command: npm test
     networks: [app]
