@@ -2,7 +2,7 @@
 
 Upload invoices and receipts (PDF, scanned PDF, JPG/PNG/TIFF, XLSX/XLS, CSV), extract structured data with OCR and an LLM, validate it, review it in a web UI, and search it.
 
-> Phase 0: infrastructure only. The stack runs and reports its own health; document processing comes next.
+> The full journey runs in the browser: upload, processing progress, extracted values, validation, corrections, review queue and search. See [docs/frontend.md](docs/frontend.md) for the pages and a manual test guide.
 
 ## Run
 
@@ -23,6 +23,8 @@ make down      # stop, keeps data
 
 Also running: `redis`, `worker` (Celery), `storage` (S3 API on 8333, bucket created by `storage-init`).
 
+To watch the worker and its tasks, run `make flower` (needs `FLOWER_USER` and `FLOWER_PASSWORD` in `.env`): [docs/monitoring.md](docs/monitoring.md).
+
 ## Check it works
 
 ```bash
@@ -31,7 +33,7 @@ curl -i localhost:8000/healthz      # 200 {"status":"ok"}
 curl -i localhost:8000/readyz       # 200, database / redis / storage all "ok"
 ```
 
-Open http://localhost:3000: four green badges (API, database, redis, storage).
+Open http://localhost:3000: it opens the documents page, and the dot in the header is green when the API, database, redis and storage are all up (hover it for details).
 
 Failure check:
 
@@ -47,10 +49,12 @@ Run `make migrate` once (and after pulling new migrations) to create the tables.
 
 ## Tests
 
-Both run in throwaway Docker containers (`make test` also starts a temporary Postgres for the database tests and removes it afterwards), so you need no local Python or Node. They work while `make dev` or `make up` is running (use a second terminal) and never touch the running stack.
+Both run in throwaway Docker containers (`make test` also starts a temporary Postgres for the database tests and removes it afterwards), so you need no local Python or Node (except for `make e2e`, which runs Playwright on the host). They work while `make dev` or `make up` is running (use a second terminal) and never touch the running stack.
 
 ```bash
-make test      # backend (pytest) + frontend (vitest): 13 + 3 passed
+make test      # backend (pytest) + frontend (vitest)
+make check     # lint, typecheck and all tests
+make e2e       # browser journey against the running stack (make up first)
 make lint      # ruff, mypy, eslint, tsc
 ```
 
@@ -65,7 +69,7 @@ docker compose --profile test run --build --rm backend-test pytest tests/unit/te
 - `.env.example` documents every variable. The API and worker refuse to start if one is missing or invalid, and name it.
 - Secrets are masked in logs and never returned by any endpoint.
 - Host ports are set in `.env` (`API_PORT`, `WEB_PORT`, `POSTGRES_PORT`, `REDIS_PORT`, `S3_PORT`).
-- `NEXT_PUBLIC_API_URL` is baked into the web build; after changing it run `docker compose up -d --build web`.
+- The browser talks only to the web server (`/api/backend/...`), which forwards to the API and adds `API_KEY` on the server. Change `API_KEY` in `.env`, then `docker compose up -d api web worker`. See [docs/frontend.md](docs/frontend.md).
 
 ## Troubleshooting
 

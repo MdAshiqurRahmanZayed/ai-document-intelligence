@@ -1,4 +1,4 @@
-.PHONY: help up dev down logs migrate test bench lint check eval
+.PHONY: help up dev down logs migrate flower test e2e bench lint check eval
 
 help: ## List targets
 	@grep -hE '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-12s %s\n", $$1, $$2}'
@@ -18,11 +18,18 @@ logs: ## Follow service logs
 migrate: ## Apply database migrations
 	docker compose exec api alembic upgrade head
 
+flower: ## Start the Flower worker dashboard (login from FLOWER_USER / FLOWER_PASSWORD in .env)
+	docker compose --profile monitoring up -d flower
+	@echo "Flower: http://localhost:$${FLOWER_PORT:-5555}"
+
 test: ## Run backend and frontend tests (in Docker)
 	@docker compose --profile test run --build --rm backend-test; status=$$?; \
 	docker compose --profile test rm -sf postgres-test >/dev/null 2>&1; \
 	[ $$status -eq 0 ] || exit $$status
 	docker compose --profile test run --build --rm web-test
+
+e2e: ## Browser journey against the running stack (run make up first; needs Node, installs Chromium once)
+	cd frontend && npm install --no-audit --no-fund && npx playwright install chromium && npx playwright test
 
 bench: ## Run the slow large-document benchmarks (in Docker)
 	@docker compose --profile test run --build --rm backend-test pytest -m slow -s; status=$$?; \

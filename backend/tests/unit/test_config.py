@@ -99,8 +99,8 @@ def test_ocr_concurrency_of_zero_is_rejected(valid_env: pytest.MonkeyPatch) -> N
 @pytest.mark.parametrize(
     ("name", "attr", "default", "override", "expected"),
     [
-        ("GEMINI_EXTRACTION_MODEL", "gemini_extraction_model", "gemini-2.5-flash", "m1", "m1"),
-        ("GEMINI_FALLBACK_MODEL", "gemini_fallback_model", "gemini-2.5-pro", "m2", "m2"),
+        ("GEMINI_EXTRACTION_MODEL", "gemini_extraction_model", "gemini-3.5-flash", "m1", "m1"),
+        ("GEMINI_FALLBACK_MODEL", "gemini_fallback_model", "gemini-3.8-flash", "m2", "m2"),
         ("EXTRACTION_PAGES_PER_CALL", "extraction_pages_per_call", 6, "3", 3),
         ("LOW_CONFIDENCE_THRESHOLD", "low_confidence_threshold", 0.5, "0.8", 0.8),
     ],

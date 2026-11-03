@@ -12,6 +12,7 @@ dependencies = [
     "alembic",
     "redis",
     "celery",
+    "flower>=2.0.1",
     "boto3",
     "python-multipart>=0.0.33",
     "pypdfium2>=5.14.0",
