@@ -10,9 +10,8 @@ COPY . .
 
 FROM deps AS build
 COPY . .
-# NEXT_PUBLIC_* values are inlined into the browser bundle at build time.
-ARG NEXT_PUBLIC_API_URL
-ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+# No NEXT_PUBLIC_* values: the browser calls this server's own /api/backend proxy, which reads
+# API_URL and API_KEY from the environment at run time.
 RUN npm run build
 
 FROM node:24-slim

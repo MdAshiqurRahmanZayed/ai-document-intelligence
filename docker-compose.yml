@@ -117,7 +117,8 @@ services:
 
   worker:
     <<: *backend
-    command: celery -A app.workers.celery_app worker -Q ingest,ocr,llm,embed
+    # -E publishes task events, which the monitoring profile's Flower shows.
+    command: celery -A app.workers.celery_app worker -E -Q ingest,ocr,llm,embed
     depends_on:
       redis:
         condition: service_healthy
@@ -129,12 +130,35 @@ services:
       timeout: 10s
       retries: 5
 
+  # Worker and task dashboard: `make flower` (profile "monitoring", off in a plain `make up`).
+  # Loopback only and behind basic auth; refuses to start without credentials.
+  flower:
+    <<: *backend
+    profiles: [monitoring]
+    command:
+      - sh
+      - -c
+      - |
+        if [ -z "$$FLOWER_USER" ] || [ -z "$$FLOWER_PASSWORD" ]; then
+          echo "Set FLOWER_USER and FLOWER_PASSWORD in .env to start Flower" >&2
+          exit 1
+        fi
+        exec celery -A app.workers.celery_app flower --port=5555 --basic-auth="$$FLOWER_USER:$$FLOWER_PASSWORD"
+    ports:
+      - "127.0.0.1:${FLOWER_PORT:-5555}:5555"
+    depends_on:
+      redis:
+        condition: service_healthy
+
   web:
     build:
       context: ./frontend
-      args:
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
     image: ai-document-intelligence-web:local
+    # Read by the web server at request time (never sent to the browser): where the API is, and the
+    # shared key it checks. The server adds the key to every call it forwards.
+    environment:
+      API_URL: http://api:8000
+      API_KEY: ${API_KEY:-}
     ports:
       - "${WEB_PORT:-3000}:3000"
     depends_on:
@@ -189,6 +213,9 @@ services:
       target: test
     image: ai-document-intelligence-web-test:local
     command: npm test
+    # The message tests check their tables against the code lists in docs/api.md (read at /docs).
+    volumes:
+      - ./docs:/docs:ro
     networks: [app]
 
 networks:
