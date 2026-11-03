@@ -1,0 +1,21 @@
+{
+  "category": "digital_pdf",
+  "expected_findings": [],
+  "expected_outcome": "success",
+  "file": "digital-03.pdf",
+  "group": "pdf",
+  "invoices": [
+    {
+      "currency": "SEK",
+      "customer_name": "Stark Components",
+      "invoice_date": "2026-09-22",
+      "invoice_number": "EV-1002",
+      "line_items_count": 3,
+      "line_items_sum": "11443.60",
+      "subtotal": "11443.60",
+      "supplier_name": "Cirrus Cloud Services AB",
+      "tax": "2860.90",
+      "total": "14304.50"
+    }
+  ]
+}

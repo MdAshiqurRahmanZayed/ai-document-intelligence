@@ -1,0 +1,8 @@
+{
+  "category": "failure",
+  "expected_findings": [],
+  "expected_outcome": "rejected:unsupported_type",
+  "file": "failure-renamed.pdf",
+  "group": "failures",
+  "invoices": []
+}

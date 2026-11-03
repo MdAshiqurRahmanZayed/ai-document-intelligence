@@ -1,0 +1,8 @@
+{
+  "category": "failure",
+  "expected_findings": [],
+  "expected_outcome": "failed:pdf_corrupt",
+  "file": "failure-corrupt.pdf",
+  "group": "failures",
+  "invoices": []
+}

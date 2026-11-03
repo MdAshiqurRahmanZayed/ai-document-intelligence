@@ -1,0 +1,21 @@
+{
+  "category": "tiff",
+  "expected_findings": [],
+  "expected_outcome": "success",
+  "file": "image-tiff-02.tiff",
+  "group": "image",
+  "invoices": [
+    {
+      "currency": "NOK",
+      "customer_name": "Stark Components",
+      "invoice_date": "2026-08-16",
+      "invoice_number": "EV-1018",
+      "line_items_count": 1,
+      "line_items_sum": "5983.95",
+      "subtotal": "5983.95",
+      "supplier_name": "Fjord Catering AS",
+      "tax": "1495.99",
+      "total": "7479.94"
+    }
+  ]
+}

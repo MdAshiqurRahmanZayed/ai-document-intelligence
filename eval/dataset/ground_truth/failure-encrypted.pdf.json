@@ -1,0 +1,8 @@
+{
+  "category": "failure",
+  "expected_findings": [],
+  "expected_outcome": "failed:pdf_encrypted",
+  "file": "failure-encrypted.pdf",
+  "group": "failures",
+  "invoices": []
+}

@@ -1,0 +1,33 @@
+{
+  "category": "xlsx",
+  "expected_findings": [],
+  "expected_outcome": "success",
+  "file": "sheet-xlsx-01.xlsx",
+  "group": "spreadsheet",
+  "invoices": [
+    {
+      "currency": "EUR",
+      "customer_name": "Hooli Media",
+      "invoice_date": "2026-07-13",
+      "invoice_number": "EV-1024",
+      "line_items_count": 3,
+      "line_items_sum": "934.32",
+      "subtotal": null,
+      "supplier_name": "Meridian Freight GmbH",
+      "tax": null,
+      "total": "1111.84"
+    },
+    {
+      "currency": "AUD",
+      "customer_name": "Fabrikam Studio",
+      "invoice_date": "2026-09-27",
+      "invoice_number": "EV-1025",
+      "line_items_count": 1,
+      "line_items_sum": "6969.60",
+      "subtotal": null,
+      "supplier_name": "Pixel Forge Studio",
+      "tax": null,
+      "total": "7666.56"
+    }
+  ]
+}

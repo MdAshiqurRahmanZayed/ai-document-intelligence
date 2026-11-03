@@ -2,6 +2,10 @@
 
 Backend tests run in Docker with `make test` (unit and integration, real PostgreSQL, Tesseract installed). `make bench` runs the slow large-document benchmarks, which `make test` skips. Tests never call a real LLM. Test files (PDFs, images, spreadsheets) are generated in memory by `tests/pdf_samples.py`, `tests/image_samples.py` and `tests/spreadsheet_samples.py`; no binary fixtures are committed.
 
+## Evaluation tests
+
+The evaluation in `eval/` (see [eval/README.md](../eval/README.md)) has its own tests in `eval/tests/`: the dataset builder (coverage, labels, same bytes every build), the scoring rules, the runner against a stub API (clean run, refused file, timeout, retry, resume, non-empty database) and the report. They need no model and no running stack, and `make test` and `make check` run them. `make eval` itself calls the real model and is run by hand.
+
 ## Frontend
 
 `make test` also runs the frontend's Vitest suite (React Testing Library, jsdom; no browser, no running API: `fetch` and `XMLHttpRequest` are stubbed). It covers:

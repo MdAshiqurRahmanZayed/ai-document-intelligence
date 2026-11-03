@@ -1,0 +1,33 @@
+{
+  "category": "csv",
+  "expected_findings": [],
+  "expected_outcome": "success",
+  "file": "sheet-csv-03.csv",
+  "group": "spreadsheet",
+  "invoices": [
+    {
+      "currency": "SEK",
+      "customer_name": null,
+      "invoice_date": "2026-10-09",
+      "invoice_number": "EV-1022",
+      "line_items_count": 4,
+      "line_items_sum": "13284.05",
+      "subtotal": null,
+      "supplier_name": "Cirrus Cloud Services AB",
+      "tax": null,
+      "total": "16605.06"
+    },
+    {
+      "currency": "GBP",
+      "customer_name": null,
+      "invoice_date": "2026-07-23",
+      "invoice_number": "EV-1023",
+      "line_items_count": 3,
+      "line_items_sum": "8281.75",
+      "subtotal": null,
+      "supplier_name": "Orbit Engineering Co",
+      "tax": null,
+      "total": "9938.10"
+    }
+  ]
+}

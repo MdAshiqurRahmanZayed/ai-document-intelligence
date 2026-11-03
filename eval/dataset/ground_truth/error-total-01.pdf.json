@@ -1,0 +1,23 @@
+{
+  "category": "seeded_error",
+  "expected_findings": [
+    "total_mismatch"
+  ],
+  "expected_outcome": "success",
+  "file": "error-total-01.pdf",
+  "group": "pdf",
+  "invoices": [
+    {
+      "currency": "SEK",
+      "customer_name": "Globex Ltd",
+      "invoice_date": "2026-07-10",
+      "invoice_number": "EV-1032",
+      "line_items_count": 1,
+      "line_items_sum": "1488.55",
+      "subtotal": "1488.55",
+      "supplier_name": "Cirrus Cloud Services AB",
+      "tax": "372.14",
+      "total": "2046.76"
+    }
+  ]
+}

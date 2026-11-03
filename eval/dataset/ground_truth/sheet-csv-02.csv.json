@@ -1,0 +1,21 @@
+{
+  "category": "csv",
+  "expected_findings": [],
+  "expected_outcome": "success",
+  "file": "sheet-csv-02.csv",
+  "group": "spreadsheet",
+  "invoices": [
+    {
+      "currency": "USD",
+      "customer_name": "Contoso Retail GmbH",
+      "invoice_date": "2026-07-12",
+      "invoice_number": "EV-1021",
+      "line_items_count": 1,
+      "line_items_sum": "207.65",
+      "subtotal": null,
+      "supplier_name": "Sunrise Bakery",
+      "tax": null,
+      "total": "224.78"
+    }
+  ]
+}

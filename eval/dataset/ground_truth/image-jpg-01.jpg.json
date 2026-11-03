@@ -1,0 +1,21 @@
+{
+  "category": "jpg",
+  "expected_findings": [],
+  "expected_outcome": "success",
+  "file": "image-jpg-01.jpg",
+  "group": "image",
+  "invoices": [
+    {
+      "currency": "USD",
+      "customer_name": "Contoso Retail GmbH",
+      "invoice_date": "2026-08-15",
+      "invoice_number": "EV-1011",
+      "line_items_count": 3,
+      "line_items_sum": "255.90",
+      "subtotal": "255.90",
+      "supplier_name": "Sunrise Bakery",
+      "tax": "21.11",
+      "total": "277.01"
+    }
+  ]
+}

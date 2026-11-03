@@ -1,0 +1,21 @@
+{
+  "category": "digital_pdf",
+  "expected_findings": [],
+  "expected_outcome": "success",
+  "file": "digital-02.pdf",
+  "group": "pdf",
+  "invoices": [
+    {
+      "currency": "USD",
+      "customer_name": "Hooli Media",
+      "invoice_date": "2026-10-25",
+      "invoice_number": "EV-1001",
+      "line_items_count": 1,
+      "line_items_sum": "451.32",
+      "subtotal": "451.32",
+      "supplier_name": "Sunrise Bakery",
+      "tax": "37.23",
+      "total": "488.55"
+    }
+  ]
+}

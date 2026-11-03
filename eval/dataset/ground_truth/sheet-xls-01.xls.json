@@ -1,0 +1,33 @@
+{
+  "category": "xls",
+  "expected_findings": [],
+  "expected_outcome": "success",
+  "file": "sheet-xls-01.xls",
+  "group": "spreadsheet",
+  "invoices": [
+    {
+      "currency": "CAD",
+      "customer_name": "Globex Ltd",
+      "invoice_date": "2026-07-05",
+      "invoice_number": "EV-1029",
+      "line_items_count": 4,
+      "line_items_sum": "1899.72",
+      "subtotal": null,
+      "supplier_name": "GreenLeaf Cleaning Services",
+      "tax": null,
+      "total": "2146.68"
+    },
+    {
+      "currency": "EUR",
+      "customer_name": "Globex Ltd",
+      "invoice_date": "2026-09-17",
+      "invoice_number": "EV-1030",
+      "line_items_count": 4,
+      "line_items_sum": "615.34",
+      "subtotal": null,
+      "supplier_name": "Northwind Supplies Ltd",
+      "tax": null,
+      "total": "756.87"
+    }
+  ]
+}

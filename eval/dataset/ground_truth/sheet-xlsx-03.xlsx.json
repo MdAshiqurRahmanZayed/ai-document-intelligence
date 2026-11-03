@@ -1,0 +1,33 @@
+{
+  "category": "xlsx",
+  "expected_findings": [],
+  "expected_outcome": "success",
+  "file": "sheet-xlsx-03.xlsx",
+  "group": "spreadsheet",
+  "invoices": [
+    {
+      "currency": "USD",
+      "customer_name": "Hooli Media",
+      "invoice_date": "2026-07-18",
+      "invoice_number": "EV-1027",
+      "line_items_count": 2,
+      "line_items_sum": "1242.66",
+      "subtotal": null,
+      "supplier_name": "TechMart Electronics Inc",
+      "tax": null,
+      "total": "1351.39"
+    },
+    {
+      "currency": "NOK",
+      "customer_name": "Globex Ltd",
+      "invoice_date": "2026-09-06",
+      "invoice_number": "EV-1028",
+      "line_items_count": 1,
+      "line_items_sum": "9839.68",
+      "subtotal": null,
+      "supplier_name": "Fjord Catering AS",
+      "tax": null,
+      "total": "12299.60"
+    }
+  ]
+}

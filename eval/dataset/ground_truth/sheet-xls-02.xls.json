@@ -1,0 +1,21 @@
+{
+  "category": "xls",
+  "expected_findings": [],
+  "expected_outcome": "success",
+  "file": "sheet-xls-02.xls",
+  "group": "spreadsheet",
+  "invoices": [
+    {
+      "currency": "USD",
+      "customer_name": "Fabrikam Studio",
+      "invoice_date": "2026-10-16",
+      "invoice_number": "EV-1031",
+      "line_items_count": 2,
+      "line_items_sum": "22.81",
+      "subtotal": null,
+      "supplier_name": "Sunrise Bakery",
+      "tax": null,
+      "total": "24.69"
+    }
+  ]
+}

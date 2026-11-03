@@ -1,0 +1,23 @@
+{
+  "category": "seeded_error",
+  "expected_findings": [
+    "total_mismatch"
+  ],
+  "expected_outcome": "success",
+  "file": "error-total-02.pdf",
+  "group": "pdf",
+  "invoices": [
+    {
+      "currency": "GBP",
+      "customer_name": "Globex Ltd",
+      "invoice_date": "2026-08-26",
+      "invoice_number": "EV-1033",
+      "line_items_count": 4,
+      "line_items_sum": "9071.97",
+      "subtotal": "9071.97",
+      "supplier_name": "Orbit Engineering Co",
+      "tax": "1814.39",
+      "total": "11975.00"
+    }
+  ]
+}

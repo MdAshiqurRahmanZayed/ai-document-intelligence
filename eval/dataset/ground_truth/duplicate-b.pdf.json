@@ -1,0 +1,24 @@
+{
+  "after": "duplicate-a.pdf",
+  "category": "seeded_error",
+  "expected_findings": [
+    "duplicate_invoice"
+  ],
+  "expected_outcome": "success",
+  "file": "duplicate-b.pdf",
+  "group": "pdf",
+  "invoices": [
+    {
+      "currency": "EUR",
+      "customer_name": "Hooli Media",
+      "invoice_date": "2026-12-01",
+      "invoice_number": "EV-1034",
+      "line_items_count": 2,
+      "line_items_sum": "9223.94",
+      "subtotal": "9223.94",
+      "supplier_name": "Meridian Freight GmbH",
+      "tax": "1752.55",
+      "total": "10976.49"
+    }
+  ]
+}

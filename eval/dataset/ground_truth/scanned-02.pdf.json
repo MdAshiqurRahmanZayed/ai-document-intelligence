@@ -1,0 +1,21 @@
+{
+  "category": "scanned_pdf",
+  "expected_findings": [],
+  "expected_outcome": "success",
+  "file": "scanned-02.pdf",
+  "group": "pdf",
+  "invoices": [
+    {
+      "currency": "CAD",
+      "customer_name": "Contoso Retail GmbH",
+      "invoice_date": "2026-09-13",
+      "invoice_number": "EV-1009",
+      "line_items_count": 4,
+      "line_items_sum": "3767.47",
+      "subtotal": "3767.47",
+      "supplier_name": "GreenLeaf Cleaning Services",
+      "tax": "489.77",
+      "total": "4257.24"
+    }
+  ]
+}
