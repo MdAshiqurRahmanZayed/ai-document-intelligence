@@ -120,7 +120,7 @@ def lines(inv: Invoice, *, receipt: bool = False) -> list[str]:
         f"Invoice No: {inv.number}",
         f"Date: {inv.date}",
         f"Due date: {inv.due}",
-        f"Bill to: {inv.customer}",
+        *([f"Bill to: {inv.customer}"] if inv.customer else []),  # an empty customer is left out
         "",
     ]
     out.append(f"{'Description':<38}{'Qty':>4}{'Price':>11}{'Amount':>12}")
@@ -129,7 +129,7 @@ def lines(inv: Invoice, *, receipt: bool = False) -> list[str]:
     out += [
         "",
         f"{'Subtotal':>53} {inv.subtotal:>10.2f}",
-        f"{f'Tax ({inv.tax_rate * 100:g}%)':>53} {inv.tax:>10.2f}",
+        *([f"{f'Tax ({inv.tax_rate * 100:g}%)':>53} {inv.tax:>10.2f}"] if inv.tax_rate else []),
         f"{'TOTAL (' + cur + ')':>53} {inv.total:>10.2f}",
         "",
         "Payment terms: bank transfer, thank you.",
@@ -139,7 +139,7 @@ def lines(inv: Invoice, *, receipt: bool = False) -> list[str]:
 
 def pdf_text(invoices: list[Invoice], path: Path) -> None:
     """A digital PDF with a real text layer; one invoice per page."""
-    pdf = canvas.Canvas(str(path), pagesize=A4)
+    pdf = canvas.Canvas(str(path), pagesize=A4, invariant=1)  # no timestamps: same bytes every run
     for inv in invoices:
         y = 790
         for i, line in enumerate(lines(inv)):
@@ -446,7 +446,7 @@ def main() -> None:
     # A PDF with no text layer: only a picture, so it has to go through OCR.
     buf = io.BytesIO()
     scan(numbered(ACME, "INV-2026-0144"), tilt=0.6, seed=5).save(buf, "JPEG", quality=85)
-    pdf = canvas.Canvas(str(OUT / "invoice-scanned.pdf"), pagesize=A4)
+    pdf = canvas.Canvas(str(OUT / "invoice-scanned.pdf"), pagesize=A4, invariant=1)
     from reportlab.lib.utils import ImageReader
 
     pdf.drawImage(
