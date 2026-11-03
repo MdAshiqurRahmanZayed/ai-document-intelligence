@@ -1,0 +1,5931 @@
+{
+ "meta": {
+  "commit": "e9bd146",
+  "date": "2026-11-03",
+  "wall_seconds": 395.5,
+  "settings": {
+   "concurrency": 2,
+   "retries": 0,
+   "timeout": 300.0
+  },
+  "models": [
+   "gemini-3.5-flash-lite",
+   "gemini-3.6-flash"
+  ],
+  "prompt_versions": [
+   "v1"
+  ],
+  "embedding_model": "models/gemini-embedding-002",
+  "manifest": {
+   "category": {
+    "csv": 3,
+    "digital_pdf": 6,
+    "failure": 4,
+    "jpg": 3,
+    "png": 3,
+    "scanned_pdf": 3,
+    "seeded_error": 4,
+    "tiff": 2,
+    "xls": 2,
+    "xlsx": 3
+   },
+   "total": 33,
+   "type": {
+    "csv": 3,
+    "jpg": 3,
+    "pdf": 17,
+    "png": 3,
+    "tiff": 2,
+    "xls": 2,
+    "xlsx": 3
+   }
+  }
+ },
+ "records": [
+  {
+   "file": "digital-01.pdf",
+   "group": "pdf",
+   "category": "digital_pdf",
+   "type": "digital_pdf",
+   "expected_outcome": "success",
+   "expected_findings": [],
+   "invoices_expected": [
+    {
+     "currency": "EUR",
+     "customer_name": "Hooli Media",
+     "invoice_date": "2026-09-16",
+     "invoice_number": "EV-1000",
+     "line_items_count": 2,
+     "line_items_sum": "396.95",
+     "subtotal": "396.95",
+     "supplier_name": "Northwind Supplies Ltd",
+     "tax": "91.30",
+     "total": "488.25"
+    }
+   ],
+   "upload": "accepted",
+   "reason": null,
+   "document_id": "8c7ebc5a-f0ed-47d7-aa41-d1c960bdddc3",
+   "status": "COMPLETED",
+   "error_code": null,
+   "timed_out": false,
+   "seconds": 3.41,
+   "events": [
+    {
+     "stage": "ingest",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:21:31.442346Z"
+    },
+    {
+     "stage": "ingest",
+     "status": "succeeded",
+     "duration_ms": 92,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:21:31.533955Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:21:31.585142Z"
+    },
+    {
+     "stage": "embed",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:21:32.558839Z"
+    },
+    {
+     "stage": "embed",
+     "status": "succeeded",
+     "duration_ms": 795,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:21:33.343079Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 5014,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 1,
+     "created_at": "2026-11-03T20:21:36.611063Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 2,
+     "created_at": "2026-11-03T20:21:36.638778Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 4465,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 2,
+     "created_at": "2026-11-03T20:21:41.116664Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 3,
+     "created_at": "2026-11-03T20:21:43.154918Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 4455,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 3,
+     "created_at": "2026-11-03T20:21:47.620772Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 4,
+     "created_at": "2026-11-03T20:21:48.651115Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 9701,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleAPIError",
+     "attempt": 4,
+     "created_at": "2026-11-03T20:21:58.368371Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:37:00.102523Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 5073,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 1,
+     "created_at": "2026-11-03T20:37:05.188579Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 2,
+     "created_at": "2026-11-03T20:37:05.280181Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 5105,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 2,
+     "created_at": "2026-11-03T20:37:10.391073Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 3,
+     "created_at": "2026-11-03T20:37:10.415065Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 5201,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 3,
+     "created_at": "2026-11-03T20:37:15.627078Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 4,
+     "created_at": "2026-11-03T20:37:15.654489Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 5213,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 4,
+     "created_at": "2026-11-03T20:37:20.878972Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:44:29.551355Z"
+    },
+    {
+     "stage": "extract",
+     "status": "succeeded",
+     "duration_ms": 2405,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:44:31.970832Z"
+    }
+   ],
+   "invoices": [
+    {
+     "tax": "91.30",
+     "total": "488.25",
+     "currency": "EUR",
+     "subtotal": "396.95",
+     "line_items": [
+      {
+       "amount": "19.19",
+       "quantity": "1",
+       "unit_price": "19.19",
+       "description": "Stapler heavy duty"
+      },
+      {
+       "amount": "377.76",
+       "quantity": "4",
+       "unit_price": "94.44",
+       "description": "Toner cartridge"
+      }
+     ],
+     "invoice_date": "2026-09-16",
+     "customer_name": "Hooli Media",
+     "supplier_name": "Northwind Supplies Ltd",
+     "invoice_number": "EV-1000"
+    }
+   ],
+   "finding_codes": [],
+   "first_pass": {
+    "status": "COMPLETED",
+    "error_code": null
+   },
+   "retried": 0,
+   "provider_attempts": 2,
+   "model": "gemini-3.5-flash-lite",
+   "prompt_version": "v1"
+  },
+  {
+   "file": "digital-02.pdf",
+   "group": "pdf",
+   "category": "digital_pdf",
+   "type": "digital_pdf",
+   "expected_outcome": "success",
+   "expected_findings": [],
+   "invoices_expected": [
+    {
+     "currency": "USD",
+     "customer_name": "Hooli Media",
+     "invoice_date": "2026-10-25",
+     "invoice_number": "EV-1001",
+     "line_items_count": 1,
+     "line_items_sum": "451.32",
+     "subtotal": "451.32",
+     "supplier_name": "Sunrise Bakery",
+     "tax": "37.23",
+     "total": "488.55"
+    }
+   ],
+   "upload": "accepted",
+   "reason": null,
+   "document_id": "1ad84853-39e8-420e-9caa-897f38fadbcc",
+   "status": "COMPLETED",
+   "error_code": null,
+   "timed_out": false,
+   "seconds": 28.53,
+   "events": [
+    {
+     "stage": "ingest",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:21:31.424794Z"
+    },
+    {
+     "stage": "ingest",
+     "status": "succeeded",
+     "duration_ms": 110,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:21:31.533868Z"
+    },
+    {
+     "stage": "embed",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:21:31.584712Z"
+    },
+    {
+     "stage": "embed",
+     "status": "succeeded",
+     "duration_ms": 797,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:21:32.379384Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:21:33.574602Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 5290,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 1,
+     "created_at": "2026-11-03T20:21:38.875158Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 2,
+     "created_at": "2026-11-03T20:21:38.896029Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 4296,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 2,
+     "created_at": "2026-11-03T20:21:43.198372Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 3,
+     "created_at": "2026-11-03T20:21:45.150330Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 6710,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 3,
+     "created_at": "2026-11-03T20:21:51.873751Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 4,
+     "created_at": "2026-11-03T20:21:51.927532Z"
+    },
+    {
+     "stage": "extract",
+     "status": "succeeded",
+     "duration_ms": 7513,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 4,
+     "created_at": "2026-11-03T20:21:59.485699Z"
+    }
+   ],
+   "invoices": [
+    {
+     "tax": "37.23",
+     "total": "488.55",
+     "currency": "USD",
+     "subtotal": "451.32",
+     "line_items": [
+      {
+       "amount": "451.32",
+       "quantity": "4",
+       "unit_price": "112.83",
+       "description": "Catering platter"
+      }
+     ],
+     "invoice_date": "2026-10-25",
+     "customer_name": "Hooli Media",
+     "supplier_name": "Sunrise Bakery",
+     "invoice_number": "EV-1001"
+    }
+   ],
+   "finding_codes": [],
+   "model": "gemini-3.6-flash",
+   "prompt_version": "v1",
+   "first_pass": {
+    "status": "COMPLETED",
+    "error_code": null
+   }
+  },
+  {
+   "file": "digital-03.pdf",
+   "group": "pdf",
+   "category": "digital_pdf",
+   "type": "digital_pdf",
+   "expected_outcome": "success",
+   "expected_findings": [],
+   "invoices_expected": [
+    {
+     "currency": "SEK",
+     "customer_name": "Stark Components",
+     "invoice_date": "2026-09-22",
+     "invoice_number": "EV-1002",
+     "line_items_count": 3,
+     "line_items_sum": "11443.60",
+     "subtotal": "11443.60",
+     "supplier_name": "Cirrus Cloud Services AB",
+     "tax": "2860.90",
+     "total": "14304.50"
+    }
+   ],
+   "upload": "accepted",
+   "reason": null,
+   "document_id": "401bc9f9-bc3c-4a03-9262-3bdd7405a55a",
+   "status": "COMPLETED",
+   "error_code": null,
+   "timed_out": false,
+   "seconds": 7.13,
+   "events": [
+    {
+     "stage": "ingest",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:21:58.945781Z"
+    },
+    {
+     "stage": "ingest",
+     "status": "succeeded",
+     "duration_ms": 65,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:21:59.008104Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:21:59.060320Z"
+    },
+    {
+     "stage": "embed",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:21:59.060776Z"
+    },
+    {
+     "stage": "embed",
+     "status": "succeeded",
+     "duration_ms": 801,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:21:59.851970Z"
+    },
+    {
+     "stage": "extract",
+     "status": "succeeded",
+     "duration_ms": 6291,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:22:05.358552Z"
+    }
+   ],
+   "invoices": [
+    {
+     "tax": "2860.90",
+     "total": "14304.50",
+     "currency": "SEK",
+     "subtotal": "11443.60",
+     "line_items": [
+      {
+       "amount": "4331.88",
+       "quantity": "7",
+       "unit_price": "618.84",
+       "description": "Backup storage"
+      },
+      {
+       "amount": "6406.68",
+       "quantity": "7",
+       "unit_price": "915.24",
+       "description": "Support hours"
+      },
+      {
+       "amount": "705.04",
+       "quantity": "4",
+       "unit_price": "176.26",
+       "description": "Domain renewal"
+      }
+     ],
+     "invoice_date": "2026-09-22",
+     "customer_name": "Stark Components",
+     "supplier_name": "Cirrus Cloud Services AB",
+     "invoice_number": "EV-1002"
+    }
+   ],
+   "finding_codes": [],
+   "model": "gemini-3.6-flash",
+   "prompt_version": "v1",
+   "first_pass": {
+    "status": "COMPLETED",
+    "error_code": null
+   }
+  },
+  {
+   "file": "digital-04.pdf",
+   "group": "pdf",
+   "category": "digital_pdf",
+   "type": "digital_pdf",
+   "expected_outcome": "success",
+   "expected_findings": [],
+   "invoices_expected": [
+    {
+     "currency": "GBP",
+     "customer_name": "Contoso Retail GmbH",
+     "invoice_date": "2026-10-07",
+     "invoice_number": "EV-1003",
+     "line_items_count": 2,
+     "line_items_sum": "9085.86",
+     "subtotal": "9085.86",
+     "supplier_name": "Orbit Engineering Co",
+     "tax": "1817.17",
+     "total": "10903.03"
+    }
+   ],
+   "upload": "accepted",
+   "reason": null,
+   "document_id": "8c5e10f0-ef6c-4d2a-aea1-71ff0cfd9403",
+   "status": "COMPLETED",
+   "error_code": null,
+   "timed_out": false,
+   "seconds": 3.08,
+   "events": [
+    {
+     "stage": "ingest",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:21:59.909689Z"
+    },
+    {
+     "stage": "ingest",
+     "status": "succeeded",
+     "duration_ms": 37,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:21:59.945038Z"
+    },
+    {
+     "stage": "embed",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:22:00.030978Z"
+    },
+    {
+     "stage": "embed",
+     "status": "succeeded",
+     "duration_ms": 878,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:22:00.898310Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:22:01.027377Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 5159,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 1,
+     "created_at": "2026-11-03T20:22:06.193297Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 2,
+     "created_at": "2026-11-03T20:22:08.207643Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 4630,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 2,
+     "created_at": "2026-11-03T20:22:12.849956Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 3,
+     "created_at": "2026-11-03T20:22:14.887045Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 4876,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 3,
+     "created_at": "2026-11-03T20:22:19.776032Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 4,
+     "created_at": "2026-11-03T20:22:22.806113Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 5347,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 4,
+     "created_at": "2026-11-03T20:22:28.168890Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:37:21.477631Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 4571,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 1,
+     "created_at": "2026-11-03T20:37:26.060753Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 2,
+     "created_at": "2026-11-03T20:37:27.099161Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 4994,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 2,
+     "created_at": "2026-11-03T20:37:32.105938Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 3,
+     "created_at": "2026-11-03T20:37:32.163201Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 4087,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 3,
+     "created_at": "2026-11-03T20:37:36.262241Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 4,
+     "created_at": "2026-11-03T20:37:39.301906Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 4695,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 4,
+     "created_at": "2026-11-03T20:37:44.011367Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:44:32.610369Z"
+    },
+    {
+     "stage": "extract",
+     "status": "succeeded",
+     "duration_ms": 2076,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:44:34.695080Z"
+    }
+   ],
+   "invoices": [
+    {
+     "tax": "1817.17",
+     "total": "10903.03",
+     "currency": "GBP",
+     "subtotal": "9085.86",
+     "line_items": [
+      {
+       "amount": "5930.19",
+       "quantity": "7",
+       "unit_price": "847.17",
+       "description": "Structural report"
+      },
+      {
+       "amount": "3155.67",
+       "quantity": "7",
+       "unit_price": "450.81",
+       "description": "Consulting day"
+      }
+     ],
+     "invoice_date": "2026-10-07",
+     "customer_name": "Contoso Retail GmbH",
+     "supplier_name": "Orbit Engineering Co",
+     "invoice_number": "EV-1003"
+    }
+   ],
+   "finding_codes": [],
+   "first_pass": {
+    "status": "COMPLETED",
+    "error_code": null
+   },
+   "retried": 0,
+   "provider_attempts": 2,
+   "model": "gemini-3.5-flash-lite",
+   "prompt_version": "v1"
+  },
+  {
+   "file": "digital-05.pdf",
+   "group": "pdf",
+   "category": "digital_pdf",
+   "type": "digital_pdf",
+   "expected_outcome": "success",
+   "expected_findings": [],
+   "invoices_expected": [
+    {
+     "currency": "EUR",
+     "customer_name": null,
+     "invoice_date": "2026-10-22",
+     "invoice_number": "EV-1004",
+     "line_items_count": 3,
+     "line_items_sum": "16065.21",
+     "subtotal": "16065.21",
+     "supplier_name": "Meridian Freight GmbH",
+     "tax": "3052.39",
+     "total": "19117.60"
+    }
+   ],
+   "upload": "accepted",
+   "reason": null,
+   "document_id": "0f44f9ea-8cb3-4c24-a327-da0b61fd2470",
+   "status": "COMPLETED",
+   "error_code": null,
+   "timed_out": false,
+   "seconds": 3.08,
+   "events": [
+    {
+     "stage": "ingest",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:22:06.123339Z"
+    },
+    {
+     "stage": "ingest",
+     "status": "succeeded",
+     "duration_ms": 49,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:22:06.170163Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:22:06.192446Z"
+    },
+    {
+     "stage": "embed",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:22:06.193586Z"
+    },
+    {
+     "stage": "embed",
+     "status": "succeeded",
+     "duration_ms": 1017,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:22:07.201488Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 5081,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 1,
+     "created_at": "2026-11-03T20:22:11.285789Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 2,
+     "created_at": "2026-11-03T20:22:11.308721Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 4808,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 2,
+     "created_at": "2026-11-03T20:22:16.126844Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 3,
+     "created_at": "2026-11-03T20:22:17.147167Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 5044,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 3,
+     "created_at": "2026-11-03T20:22:22.202611Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 4,
+     "created_at": "2026-11-03T20:22:25.238537Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 4651,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 4,
+     "created_at": "2026-11-03T20:22:29.912174Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:37:44.926045Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 5624,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 1,
+     "created_at": "2026-11-03T20:37:50.563899Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 2,
+     "created_at": "2026-11-03T20:37:50.625834Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 5239,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 2,
+     "created_at": "2026-11-03T20:37:55.878705Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 3,
+     "created_at": "2026-11-03T20:37:56.917780Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 4617,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 3,
+     "created_at": "2026-11-03T20:38:01.545926Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 4,
+     "created_at": "2026-11-03T20:38:01.571129Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 5062,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 4,
+     "created_at": "2026-11-03T20:38:06.645169Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:44:35.696677Z"
+    },
+    {
+     "stage": "extract",
+     "status": "succeeded",
+     "duration_ms": 2094,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:44:37.798977Z"
+    }
+   ],
+   "invoices": [
+    {
+     "tax": "3052.39",
+     "total": "19117.60",
+     "currency": "EUR",
+     "subtotal": "16065.21",
+     "line_items": [
+      {
+       "amount": "123.81",
+       "quantity": "3",
+       "unit_price": "41.27",
+       "description": "Pallet storage per week"
+      },
+      {
+       "amount": "15548.68",
+       "quantity": "7",
+       "unit_price": "2221.24",
+       "description": "Sea freight container"
+      },
+      {
+       "amount": "392.72",
+       "quantity": "2",
+       "unit_price": "196.36",
+       "description": "Customs clearance"
+      }
+     ],
+     "invoice_date": "2026-10-22",
+     "customer_name": null,
+     "supplier_name": "Meridian Freight GmbH",
+     "invoice_number": "EV-1004"
+    }
+   ],
+   "finding_codes": [],
+   "first_pass": {
+    "status": "COMPLETED",
+    "error_code": null
+   },
+   "model": "gemini-3.5-flash-lite",
+   "prompt_version": "v1",
+   "retried": 0,
+   "provider_attempts": 1
+  },
+  {
+   "file": "digital-06.pdf",
+   "group": "pdf",
+   "category": "digital_pdf",
+   "type": "digital_pdf",
+   "expected_outcome": "success",
+   "expected_findings": [],
+   "invoices_expected": [
+    {
+     "currency": "AUD",
+     "customer_name": "Globex Ltd",
+     "invoice_date": "2026-07-22",
+     "invoice_number": "EV-1005",
+     "line_items_count": 4,
+     "line_items_sum": "17620.92",
+     "subtotal": "17620.92",
+     "supplier_name": "Pixel Forge Studio",
+     "tax": "1762.09",
+     "total": "19383.01"
+    },
+    {
+     "currency": "GBP",
+     "customer_name": "Fabrikam Studio",
+     "invoice_date": "2026-08-10",
+     "invoice_number": "EV-1006",
+     "line_items_count": 2,
+     "line_items_sum": "5724.85",
+     "subtotal": "5724.85",
+     "supplier_name": "Harlow & Finch Solicitors",
+     "tax": "1144.97",
+     "total": "6869.82"
+    },
+    {
+     "currency": "USD",
+     "customer_name": "Umbrella Logistics",
+     "invoice_date": "2026-09-22",
+     "invoice_number": "EV-1007",
+     "line_items_count": 1,
+     "line_items_sum": "1089.92",
+     "subtotal": "1089.92",
+     "supplier_name": "TechMart Electronics Inc",
+     "tax": "95.37",
+     "total": "1185.29"
+    }
+   ],
+   "upload": "accepted",
+   "reason": null,
+   "document_id": "93677997-e948-4c7c-b9f7-40866425ab95",
+   "status": "COMPLETED",
+   "error_code": null,
+   "timed_out": false,
+   "seconds": 29.57,
+   "events": [
+    {
+     "stage": "ingest",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:22:28.399491Z"
+    },
+    {
+     "stage": "ingest",
+     "status": "succeeded",
+     "duration_ms": 43,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:22:28.439984Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:22:28.461622Z"
+    },
+    {
+     "stage": "embed",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:22:28.461723Z"
+    },
+    {
+     "stage": "embed",
+     "status": "succeeded",
+     "duration_ms": 837,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:22:29.288102Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 5538,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 1,
+     "created_at": "2026-11-03T20:22:34.013317Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 2,
+     "created_at": "2026-11-03T20:22:34.040851Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 4927,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 2,
+     "created_at": "2026-11-03T20:22:38.993486Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 3,
+     "created_at": "2026-11-03T20:22:40.066295Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 5156,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 3,
+     "created_at": "2026-11-03T20:22:45.240381Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 4,
+     "created_at": "2026-11-03T20:22:46.263311Z"
+    },
+    {
+     "stage": "extract",
+     "status": "succeeded",
+     "duration_ms": 11074,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 4,
+     "created_at": "2026-11-03T20:22:57.341955Z"
+    }
+   ],
+   "invoices": [
+    {
+     "tax": "1762.09",
+     "total": "19383.01",
+     "currency": "AUD",
+     "subtotal": "17620.92",
+     "line_items": [
+      {
+       "amount": "5464.42",
+       "quantity": "1",
+       "unit_price": "5464.42",
+       "description": "Website redesign"
+      },
+      {
+       "amount": "136.20",
+       "quantity": "2",
+       "unit_price": "68.10",
+       "description": "Stock images pack"
+      },
+      {
+       "amount": "4030.86",
+       "quantity": "6",
+       "unit_price": "671.81",
+       "description": "Photography half day"
+      },
+      {
+       "amount": "7989.44",
+       "quantity": "8",
+       "unit_price": "998.68",
+       "description": "Logo design"
+      }
+     ],
+     "invoice_date": "2026-07-22",
+     "customer_name": "Globex Ltd",
+     "supplier_name": "Pixel Forge Studio",
+     "invoice_number": "EV-1005"
+    },
+    {
+     "tax": "1144.97",
+     "total": "6869.82",
+     "currency": "GBP",
+     "subtotal": "5724.85",
+     "line_items": [
+      {
+       "amount": "5490.16",
+       "quantity": "8",
+       "unit_price": "686.27",
+       "description": "Contract review"
+      },
+      {
+       "amount": "234.69",
+       "quantity": "3",
+       "unit_price": "78.23",
+       "description": "Company filing fee"
+      }
+     ],
+     "invoice_date": "2026-08-10",
+     "customer_name": "Fabrikam Studio",
+     "supplier_name": "Harlow & Finch Solicitors",
+     "invoice_number": "EV-1006"
+    },
+    {
+     "tax": "95.37",
+     "total": "1185.29",
+     "currency": "USD",
+     "subtotal": "1089.92",
+     "line_items": [
+      {
+       "amount": "1089.92",
+       "quantity": "8",
+       "unit_price": "136.24",
+       "description": "USB-C dock"
+      }
+     ],
+     "invoice_date": "2026-09-22",
+     "customer_name": "Umbrella Logistics",
+     "supplier_name": "TechMart Electronics Inc",
+     "invoice_number": "EV-1007"
+    }
+   ],
+   "finding_codes": [],
+   "model": "gemini-3.6-flash",
+   "prompt_version": "v1",
+   "first_pass": {
+    "status": "COMPLETED",
+    "error_code": null
+   }
+  },
+  {
+   "file": "duplicate-a.pdf",
+   "group": "pdf",
+   "category": "seeded_error",
+   "type": "digital_pdf",
+   "expected_outcome": "success",
+   "expected_findings": [],
+   "invoices_expected": [
+    {
+     "currency": "EUR",
+     "customer_name": "Hooli Media",
+     "invoice_date": "2026-10-11",
+     "invoice_number": "EV-1034",
+     "line_items_count": 2,
+     "line_items_sum": "9223.94",
+     "subtotal": "9223.94",
+     "supplier_name": "Meridian Freight GmbH",
+     "tax": "1752.55",
+     "total": "10976.49"
+    }
+   ],
+   "upload": "accepted",
+   "reason": null,
+   "document_id": "8cf8a40b-f6ea-4182-8025-c531df7b8b0b",
+   "status": "COMPLETED",
+   "error_code": null,
+   "timed_out": false,
+   "seconds": 35.58,
+   "events": [
+    {
+     "stage": "ingest",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:22:30.495460Z"
+    },
+    {
+     "stage": "ingest",
+     "status": "succeeded",
+     "duration_ms": 49,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:22:30.542586Z"
+    },
+    {
+     "stage": "embed",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:22:30.557725Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:22:30.557869Z"
+    },
+    {
+     "stage": "embed",
+     "status": "succeeded",
+     "duration_ms": 860,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:22:31.405463Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 4410,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 1,
+     "created_at": "2026-11-03T20:22:34.979444Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 2,
+     "created_at": "2026-11-03T20:22:36.041521Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 4708,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 2,
+     "created_at": "2026-11-03T20:22:40.767681Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 3,
+     "created_at": "2026-11-03T20:22:42.057917Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 4566,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 3,
+     "created_at": "2026-11-03T20:22:46.634282Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 4,
+     "created_at": "2026-11-03T20:22:48.279541Z"
+    },
+    {
+     "stage": "extract",
+     "status": "succeeded",
+     "duration_ms": 16865,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 4,
+     "created_at": "2026-11-03T20:23:05.151123Z"
+    }
+   ],
+   "invoices": [
+    {
+     "tax": "1752.55",
+     "total": "10976.49",
+     "currency": "EUR",
+     "subtotal": "9223.94",
+     "line_items": [
+      {
+       "amount": "36.86",
+       "quantity": "1",
+       "unit_price": "36.86",
+       "description": "Pallet storage per week"
+      },
+      {
+       "amount": "9187.08",
+       "quantity": "4",
+       "unit_price": "2296.77",
+       "description": "Sea freight container"
+      }
+     ],
+     "invoice_date": "2026-10-11",
+     "customer_name": "Hooli Media",
+     "supplier_name": "Meridian Freight GmbH",
+     "invoice_number": "EV-1034"
+    }
+   ],
+   "finding_codes": [],
+   "model": "gemini-3.6-flash",
+   "prompt_version": "v1",
+   "first_pass": {
+    "status": "COMPLETED",
+    "error_code": null
+   }
+  },
+  {
+   "file": "duplicate-b.pdf",
+   "group": "pdf",
+   "category": "seeded_error",
+   "type": "digital_pdf",
+   "expected_outcome": "success",
+   "expected_findings": [
+    "duplicate_invoice"
+   ],
+   "invoices_expected": [
+    {
+     "currency": "EUR",
+     "customer_name": "Hooli Media",
+     "invoice_date": "2026-12-01",
+     "invoice_number": "EV-1034",
+     "line_items_count": 2,
+     "line_items_sum": "9223.94",
+     "subtotal": "9223.94",
+     "supplier_name": "Meridian Freight GmbH",
+     "tax": "1752.55",
+     "total": "10976.49"
+    }
+   ],
+   "upload": "accepted",
+   "reason": null,
+   "document_id": "c53c84f2-b7cd-4d33-b2e7-e8816b08c944",
+   "status": "NEEDS_REVIEW",
+   "error_code": null,
+   "timed_out": false,
+   "seconds": 3.11,
+   "events": [
+    {
+     "stage": "ingest",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:45:33.642105Z"
+    },
+    {
+     "stage": "ingest",
+     "status": "succeeded",
+     "duration_ms": 61,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:45:33.700812Z"
+    },
+    {
+     "stage": "embed",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:45:33.721556Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:45:33.722766Z"
+    },
+    {
+     "stage": "embed",
+     "status": "failed",
+     "duration_ms": 524,
+     "error_code": "embedding_failed",
+     "error_message": "GoogleGenerativeAIError",
+     "attempt": 1,
+     "created_at": "2026-11-03T20:45:34.256506Z"
+    },
+    {
+     "stage": "embed",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 2,
+     "created_at": "2026-11-03T20:45:34.745494Z"
+    },
+    {
+     "stage": "embed",
+     "status": "failed",
+     "duration_ms": 529,
+     "error_code": "embedding_failed",
+     "error_message": "GoogleGenerativeAIError",
+     "attempt": 2,
+     "created_at": "2026-11-03T20:45:35.286461Z"
+    },
+    {
+     "stage": "embed",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 3,
+     "created_at": "2026-11-03T20:45:35.740994Z"
+    },
+    {
+     "stage": "extract",
+     "status": "succeeded",
+     "duration_ms": 2276,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:45:36.006702Z"
+    },
+    {
+     "stage": "embed",
+     "status": "failed",
+     "duration_ms": 382,
+     "error_code": "embedding_failed",
+     "error_message": "GoogleGenerativeAIError",
+     "attempt": 3,
+     "created_at": "2026-11-03T20:45:36.131208Z"
+    }
+   ],
+   "invoices": [
+    {
+     "tax": "1752.55",
+     "total": "10976.49",
+     "currency": "EUR",
+     "subtotal": "9223.94",
+     "line_items": [
+      {
+       "amount": "36.86",
+       "quantity": "1",
+       "unit_price": "36.86",
+       "description": "Pallet storage per week"
+      },
+      {
+       "amount": "9187.08",
+       "quantity": "4",
+       "unit_price": "2296.77",
+       "description": "Sea freight container"
+      }
+     ],
+     "invoice_date": "2026-12-01",
+     "customer_name": "Hooli Media",
+     "supplier_name": "Meridian Freight GmbH",
+     "invoice_number": "EV-1034"
+    }
+   ],
+   "finding_codes": [
+    "future_date",
+    "duplicate_invoice"
+   ],
+   "model": "gemini-3.5-flash-lite",
+   "prompt_version": "v1",
+   "first_pass": {
+    "status": "NEEDS_REVIEW",
+    "error_code": null
+   }
+  },
+  {
+   "file": "error-total-01.pdf",
+   "group": "pdf",
+   "category": "seeded_error",
+   "type": "digital_pdf",
+   "expected_outcome": "success",
+   "expected_findings": [
+    "total_mismatch"
+   ],
+   "invoices_expected": [
+    {
+     "currency": "SEK",
+     "customer_name": "Globex Ltd",
+     "invoice_date": "2026-07-10",
+     "invoice_number": "EV-1032",
+     "line_items_count": 1,
+     "line_items_sum": "1488.55",
+     "subtotal": "1488.55",
+     "supplier_name": "Cirrus Cloud Services AB",
+     "tax": "372.14",
+     "total": "2046.76"
+    }
+   ],
+   "upload": "accepted",
+   "reason": null,
+   "document_id": "87339b1a-ab79-455b-ab26-485a35e01090",
+   "status": "NEEDS_REVIEW",
+   "error_code": null,
+   "timed_out": false,
+   "seconds": 2.05,
+   "events": [
+    {
+     "stage": "ingest",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:22:58.053396Z"
+    },
+    {
+     "stage": "ingest",
+     "status": "succeeded",
+     "duration_ms": 61,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:22:58.112138Z"
+    },
+    {
+     "stage": "embed",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:22:58.162579Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:22:58.162595Z"
+    },
+    {
+     "stage": "embed",
+     "status": "succeeded",
+     "duration_ms": 1012,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:22:59.165036Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 4398,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 1,
+     "created_at": "2026-11-03T20:23:02.567557Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 2,
+     "created_at": "2026-11-03T20:23:03.612889Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 5499,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 2,
+     "created_at": "2026-11-03T20:23:09.124698Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 3,
+     "created_at": "2026-11-03T20:23:10.158834Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 4262,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 3,
+     "created_at": "2026-11-03T20:23:14.427903Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 4,
+     "created_at": "2026-11-03T20:23:15.443520Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 5177,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 4,
+     "created_at": "2026-11-03T20:23:20.647203Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:44:38.822707Z"
+    },
+    {
+     "stage": "extract",
+     "status": "succeeded",
+     "duration_ms": 1884,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:44:40.715575Z"
+    }
+   ],
+   "invoices": [
+    {
+     "tax": "372.14",
+     "total": "2046.76",
+     "currency": "SEK",
+     "subtotal": "1488.55",
+     "line_items": [
+      {
+       "amount": "1488.55",
+       "quantity": "7",
+       "unit_price": "212.65",
+       "description": "Domain renewal"
+      }
+     ],
+     "invoice_date": "2026-07-10",
+     "customer_name": "Globex Ltd",
+     "supplier_name": "Cirrus Cloud Services AB",
+     "invoice_number": "EV-1032"
+    }
+   ],
+   "finding_codes": [
+    "total_mismatch"
+   ],
+   "first_pass": {
+    "status": "NEEDS_REVIEW",
+    "error_code": null
+   },
+   "model": "gemini-3.5-flash-lite",
+   "prompt_version": "v1",
+   "retried": 0,
+   "provider_attempts": 1
+  },
+  {
+   "file": "error-total-02.pdf",
+   "group": "pdf",
+   "category": "seeded_error",
+   "type": "digital_pdf",
+   "expected_outcome": "success",
+   "expected_findings": [
+    "total_mismatch"
+   ],
+   "invoices_expected": [
+    {
+     "currency": "GBP",
+     "customer_name": "Globex Ltd",
+     "invoice_date": "2026-08-26",
+     "invoice_number": "EV-1033",
+     "line_items_count": 4,
+     "line_items_sum": "9071.97",
+     "subtotal": "9071.97",
+     "supplier_name": "Orbit Engineering Co",
+     "tax": "1814.39",
+     "total": "11975.00"
+    }
+   ],
+   "upload": "accepted",
+   "reason": null,
+   "document_id": "a17ff274-7c13-4ccf-ba76-7e7c5ca39e54",
+   "status": "NEEDS_REVIEW",
+   "error_code": null,
+   "timed_out": false,
+   "seconds": 3.07,
+   "events": [
+    {
+     "stage": "ingest",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:23:06.112024Z"
+    },
+    {
+     "stage": "ingest",
+     "status": "succeeded",
+     "duration_ms": 52,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:23:06.162224Z"
+    },
+    {
+     "stage": "embed",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:23:06.178582Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:23:06.178615Z"
+    },
+    {
+     "stage": "embed",
+     "status": "succeeded",
+     "duration_ms": 948,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:23:07.113647Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 5383,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 1,
+     "created_at": "2026-11-03T20:23:11.579671Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 2,
+     "created_at": "2026-11-03T20:23:12.162073Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 4847,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 2,
+     "created_at": "2026-11-03T20:23:17.027398Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 3,
+     "created_at": "2026-11-03T20:23:17.465809Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 4682,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 3,
+     "created_at": "2026-11-03T20:23:22.171836Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 4,
+     "created_at": "2026-11-03T20:23:25.654067Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 5510,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 4,
+     "created_at": "2026-11-03T20:23:31.176753Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:44:40.892844Z"
+    },
+    {
+     "stage": "extract",
+     "status": "succeeded",
+     "duration_ms": 2122,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:44:43.023516Z"
+    }
+   ],
+   "invoices": [
+    {
+     "tax": "1814.39",
+     "total": "11975.00",
+     "currency": "GBP",
+     "subtotal": "9071.97",
+     "line_items": [
+      {
+       "amount": "1426.83",
+       "quantity": "3",
+       "unit_price": "475.61",
+       "description": "Consulting day"
+      },
+      {
+       "amount": "1150.40",
+       "quantity": "5",
+       "unit_price": "230.08",
+       "description": "CAD drawing"
+      },
+      {
+       "amount": "1082.55",
+       "quantity": "3",
+       "unit_price": "360.85",
+       "description": "Site inspection"
+      },
+      {
+       "amount": "5412.19",
+       "quantity": "7",
+       "unit_price": "773.17",
+       "description": "Structural report"
+      }
+     ],
+     "invoice_date": "2026-08-26",
+     "customer_name": "Globex Ltd",
+     "supplier_name": "Orbit Engineering Co",
+     "invoice_number": "EV-1033"
+    }
+   ],
+   "finding_codes": [
+    "total_mismatch"
+   ],
+   "first_pass": {
+    "status": "NEEDS_REVIEW",
+    "error_code": null
+   },
+   "model": "gemini-3.5-flash-lite",
+   "prompt_version": "v1",
+   "retried": 0,
+   "provider_attempts": 1
+  },
+  {
+   "file": "failure-corrupt.pdf",
+   "group": "failures",
+   "category": "failure",
+   "type": "failure",
+   "expected_outcome": "failed:pdf_corrupt",
+   "expected_findings": [],
+   "invoices_expected": [],
+   "upload": "accepted",
+   "reason": null,
+   "document_id": "5b5e6285-fc97-40ad-8943-5e7cae90eb0c",
+   "status": "FAILED",
+   "error_code": "pdf_corrupt",
+   "timed_out": false,
+   "seconds": 1.47,
+   "events": [
+    {
+     "stage": "ingest",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:19:31.530487Z"
+    },
+    {
+     "stage": "ingest",
+     "status": "failed",
+     "duration_ms": 138,
+     "error_code": "pdf_corrupt",
+     "error_message": "pdf_corrupt",
+     "attempt": 1,
+     "created_at": "2026-11-03T20:19:31.674264Z"
+    }
+   ],
+   "invoices": [],
+   "finding_codes": [],
+   "first_pass": {
+    "status": "FAILED",
+    "error_code": "pdf_corrupt"
+   }
+  },
+  {
+   "file": "failure-empty.pdf",
+   "group": "failures",
+   "category": "failure",
+   "type": "failure",
+   "expected_outcome": "rejected:empty_file",
+   "expected_findings": [],
+   "invoices_expected": [],
+   "upload": "rejected",
+   "reason": "empty_file",
+   "document_id": null,
+   "status": null,
+   "error_code": null,
+   "timed_out": false,
+   "seconds": null,
+   "events": [],
+   "invoices": [],
+   "first_pass": {
+    "status": null,
+    "error_code": null
+   }
+  },
+  {
+   "file": "failure-encrypted.pdf",
+   "group": "failures",
+   "category": "failure",
+   "type": "failure",
+   "expected_outcome": "failed:pdf_encrypted",
+   "expected_findings": [],
+   "invoices_expected": [],
+   "upload": "accepted",
+   "reason": null,
+   "document_id": "1e63a8d1-5136-49a6-94a4-ac85259fb124",
+   "status": "FAILED",
+   "error_code": "pdf_encrypted",
+   "timed_out": false,
+   "seconds": 1.43,
+   "events": [
+    {
+     "stage": "ingest",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:19:31.530487Z"
+    },
+    {
+     "stage": "ingest",
+     "status": "failed",
+     "duration_ms": 138,
+     "error_code": "pdf_encrypted",
+     "error_message": "pdf_encrypted",
+     "attempt": 1,
+     "created_at": "2026-11-03T20:19:31.674567Z"
+    }
+   ],
+   "invoices": [],
+   "finding_codes": [],
+   "first_pass": {
+    "status": "FAILED",
+    "error_code": "pdf_encrypted"
+   }
+  },
+  {
+   "file": "failure-renamed.pdf",
+   "group": "failures",
+   "category": "failure",
+   "type": "failure",
+   "expected_outcome": "rejected:unsupported_type",
+   "expected_findings": [],
+   "invoices_expected": [],
+   "upload": "rejected",
+   "reason": "unsupported_type",
+   "document_id": null,
+   "status": null,
+   "error_code": null,
+   "timed_out": false,
+   "seconds": null,
+   "events": [],
+   "invoices": [],
+   "first_pass": {
+    "status": null,
+    "error_code": null
+   }
+  },
+  {
+   "file": "image-jpg-01.jpg",
+   "group": "image",
+   "category": "jpg",
+   "type": "jpg",
+   "expected_outcome": "success",
+   "expected_findings": [],
+   "invoices_expected": [
+    {
+     "currency": "USD",
+     "customer_name": "Contoso Retail GmbH",
+     "invoice_date": "2026-08-15",
+     "invoice_number": "EV-1011",
+     "line_items_count": 3,
+     "line_items_sum": "255.90",
+     "subtotal": "255.90",
+     "supplier_name": "Sunrise Bakery",
+     "tax": "21.11",
+     "total": "277.01"
+    }
+   ],
+   "upload": "accepted",
+   "reason": null,
+   "document_id": "cdbbb3b0-8f41-4f0c-8980-4951da471fcf",
+   "status": "COMPLETED",
+   "error_code": null,
+   "timed_out": false,
+   "seconds": 3.09,
+   "events": [
+    {
+     "stage": "ingest",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:24:35.032093Z"
+    },
+    {
+     "stage": "ingest",
+     "status": "succeeded",
+     "duration_ms": 175,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:24:35.208381Z"
+    },
+    {
+     "stage": "ocr",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:24:35.265580Z"
+    },
+    {
+     "stage": "ocr",
+     "status": "succeeded",
+     "duration_ms": 569,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:24:35.838097Z"
+    },
+    {
+     "stage": "embed",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:24:36.843431Z"
+    },
+    {
+     "stage": "embed",
+     "status": "succeeded",
+     "duration_ms": 897,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:24:37.732017Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:24:37.822365Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 4544,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 1,
+     "created_at": "2026-11-03T20:24:42.383720Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 2,
+     "created_at": "2026-11-03T20:24:44.089184Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 4389,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 2,
+     "created_at": "2026-11-03T20:24:48.486946Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 3,
+     "created_at": "2026-11-03T20:24:49.538774Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 5404,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 3,
+     "created_at": "2026-11-03T20:24:54.949698Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 4,
+     "created_at": "2026-11-03T20:24:58.996814Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 4347,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 4,
+     "created_at": "2026-11-03T20:25:03.356477Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:44:44.010388Z"
+    },
+    {
+     "stage": "extract",
+     "status": "succeeded",
+     "duration_ms": 2309,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:44:46.327066Z"
+    }
+   ],
+   "invoices": [
+    {
+     "tax": "21.11",
+     "total": "277.01",
+     "currency": "USD",
+     "subtotal": "255.90",
+     "line_items": [
+      {
+       "amount": "19.02",
+       "quantity": "6",
+       "unit_price": "3.17",
+       "description": "Croissant"
+      },
+      {
+       "amount": "35.20",
+       "quantity": "5",
+       "unit_price": "7.04",
+       "description": "Sourdough loaf"
+      },
+      {
+       "amount": "201.68",
+       "quantity": "4",
+       "unit_price": "0.42",
+       "description": "Birthday cake"
+      }
+     ],
+     "invoice_date": "2026-08-15",
+     "customer_name": "Contoso Retal1l GmbH",
+     "supplier_name": "Sunrise Bakery",
+     "invoice_number": "EV-1011"
+    }
+   ],
+   "finding_codes": [
+    "line_amount_mismatch"
+   ],
+   "first_pass": {
+    "status": "COMPLETED",
+    "error_code": null
+   },
+   "model": "gemini-3.5-flash-lite",
+   "prompt_version": "v1",
+   "retried": 0,
+   "provider_attempts": 1
+  },
+  {
+   "file": "image-jpg-02.jpg",
+   "group": "image",
+   "category": "jpg",
+   "type": "jpg",
+   "expected_outcome": "success",
+   "expected_findings": [],
+   "invoices_expected": [
+    {
+     "currency": "SEK",
+     "customer_name": "Hooli Media",
+     "invoice_date": "2026-07-09",
+     "invoice_number": "EV-1012",
+     "line_items_count": 2,
+     "line_items_sum": "34610.94",
+     "subtotal": "34610.94",
+     "supplier_name": "Cirrus Cloud Services AB",
+     "tax": "8652.74",
+     "total": "43263.68"
+    }
+   ],
+   "upload": "accepted",
+   "reason": null,
+   "document_id": "267338d7-90ab-4c07-9544-af401e4ec445",
+   "status": "COMPLETED",
+   "error_code": null,
+   "timed_out": false,
+   "seconds": 3.08,
+   "events": [
+    {
+     "stage": "ingest",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:24:35.032049Z"
+    },
+    {
+     "stage": "ingest",
+     "status": "succeeded",
+     "duration_ms": 176,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:24:35.208322Z"
+    },
+    {
+     "stage": "ocr",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:24:35.270141Z"
+    },
+    {
+     "stage": "ocr",
+     "status": "succeeded",
+     "duration_ms": 525,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:24:35.791440Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:24:35.816738Z"
+    },
+    {
+     "stage": "embed",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:24:35.816749Z"
+    },
+    {
+     "stage": "embed",
+     "status": "succeeded",
+     "duration_ms": 1074,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:24:36.885601Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 5180,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 1,
+     "created_at": "2026-11-03T20:24:41.039660Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 2,
+     "created_at": "2026-11-03T20:24:42.091954Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 5170,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 2,
+     "created_at": "2026-11-03T20:24:47.275014Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 3,
+     "created_at": "2026-11-03T20:24:47.318215Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 5413,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 3,
+     "created_at": "2026-11-03T20:24:52.744427Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 4,
+     "created_at": "2026-11-03T20:24:56.787026Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 5257,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 4,
+     "created_at": "2026-11-03T20:25:02.055629Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:44:47.136796Z"
+    },
+    {
+     "stage": "extract",
+     "status": "succeeded",
+     "duration_ms": 2166,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:44:49.312482Z"
+    }
+   ],
+   "invoices": [
+    {
+     "tax": "8652.74",
+     "total": "43263.68",
+     "currency": "SEK",
+     "subtotal": "34610.94",
+     "line_items": [
+      {
+       "amount": "27341.58",
+       "quantity": "6",
+       "unit_price": "4556.93",
+       "description": "Managed hosting"
+      },
+      {
+       "amount": "7269.36",
+       "quantity": "8",
+       "unit_price": "908.67",
+       "description": "Support hours"
+      }
+     ],
+     "invoice_date": "2026-07-09",
+     "customer_name": "Hooli Media",
+     "supplier_name": "Cirrus Cloud Services AB",
+     "invoice_number": "EV-1012"
+    }
+   ],
+   "finding_codes": [],
+   "first_pass": {
+    "status": "COMPLETED",
+    "error_code": null
+   },
+   "model": "gemini-3.5-flash-lite",
+   "prompt_version": "v1",
+   "retried": 0,
+   "provider_attempts": 1
+  },
+  {
+   "file": "image-jpg-03.jpg",
+   "group": "image",
+   "category": "jpg",
+   "type": "jpg",
+   "expected_outcome": "success",
+   "expected_findings": [],
+   "invoices_expected": [
+    {
+     "currency": "GBP",
+     "customer_name": "Contoso Retail GmbH",
+     "invoice_date": "2026-09-25",
+     "invoice_number": "EV-1013",
+     "line_items_count": 1,
+     "line_items_sum": "3961.51",
+     "subtotal": "3961.51",
+     "supplier_name": "Orbit Engineering Co",
+     "tax": null,
+     "total": "3961.51"
+    }
+   ],
+   "upload": "accepted",
+   "reason": null,
+   "document_id": "ae44eacf-0a83-4dd9-8fac-2fca84757828",
+   "status": "COMPLETED",
+   "error_code": null,
+   "timed_out": false,
+   "seconds": 3.06,
+   "events": [
+    {
+     "stage": "ingest",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:25:02.556916Z"
+    },
+    {
+     "stage": "ingest",
+     "status": "succeeded",
+     "duration_ms": 68,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:25:02.624188Z"
+    },
+    {
+     "stage": "ocr",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:25:02.636661Z"
+    },
+    {
+     "stage": "ocr",
+     "status": "succeeded",
+     "duration_ms": 301,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:25:02.933446Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:25:02.963103Z"
+    },
+    {
+     "stage": "embed",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:25:02.972986Z"
+    },
+    {
+     "stage": "embed",
+     "status": "succeeded",
+     "duration_ms": 772,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:25:03.740218Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 5197,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 1,
+     "created_at": "2026-11-03T20:25:08.169079Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 2,
+     "created_at": "2026-11-03T20:25:09.211191Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 5286,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 2,
+     "created_at": "2026-11-03T20:25:14.509365Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 3,
+     "created_at": "2026-11-03T20:25:17.056494Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 5004,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 3,
+     "created_at": "2026-11-03T20:25:22.071789Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 4,
+     "created_at": "2026-11-03T20:25:24.525754Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 4419,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 4,
+     "created_at": "2026-11-03T20:25:28.959427Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:44:50.249737Z"
+    },
+    {
+     "stage": "extract",
+     "status": "succeeded",
+     "duration_ms": 2028,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:44:52.287454Z"
+    }
+   ],
+   "invoices": [
+    {
+     "tax": null,
+     "total": "396392",
+     "currency": "USD",
+     "subtotal": "396381",
+     "line_items": [],
+     "invoice_date": "2026-09-25",
+     "customer_name": "DIIL Coe Contos Retail Gmpa",
+     "supplier_name": "Orbit Engiaseriag Co",
+     "invoice_number": "Ev-101)"
+    }
+   ],
+   "finding_codes": [
+    "ungrounded_field"
+   ],
+   "first_pass": {
+    "status": "COMPLETED",
+    "error_code": null
+   },
+   "model": "gemini-3.5-flash-lite",
+   "prompt_version": "v1",
+   "retried": 0,
+   "provider_attempts": 1
+  },
+  {
+   "file": "image-png-01.png",
+   "group": "image",
+   "category": "png",
+   "type": "png",
+   "expected_outcome": "success",
+   "expected_findings": [],
+   "invoices_expected": [
+    {
+     "currency": "EUR",
+     "customer_name": "Hooli Media",
+     "invoice_date": "2026-10-11",
+     "invoice_number": "EV-1014",
+     "line_items_count": 1,
+     "line_items_sum": "77.24",
+     "subtotal": "77.24",
+     "supplier_name": "Meridian Freight GmbH",
+     "tax": "14.68",
+     "total": "91.92"
+    }
+   ],
+   "upload": "accepted",
+   "reason": null,
+   "document_id": "1cbb8cea-71b3-4070-82bd-62c87cffdca2",
+   "status": "COMPLETED",
+   "error_code": null,
+   "timed_out": false,
+   "seconds": 3.06,
+   "events": [
+    {
+     "stage": "ingest",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:25:03.544301Z"
+    },
+    {
+     "stage": "ingest",
+     "status": "succeeded",
+     "duration_ms": 79,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:25:03.623733Z"
+    },
+    {
+     "stage": "ocr",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:25:03.637235Z"
+    },
+    {
+     "stage": "ocr",
+     "status": "succeeded",
+     "duration_ms": 382,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:25:04.016120Z"
+    },
+    {
+     "stage": "embed",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:25:04.037817Z"
+    },
+    {
+     "stage": "embed",
+     "status": "succeeded",
+     "duration_ms": 773,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:25:04.799136Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:25:04.970800Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 5086,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 1,
+     "created_at": "2026-11-03T20:25:10.070279Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 2,
+     "created_at": "2026-11-03T20:25:11.198481Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 3814,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 2,
+     "created_at": "2026-11-03T20:25:15.023358Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 3,
+     "created_at": "2026-11-03T20:25:15.045154Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 5433,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 3,
+     "created_at": "2026-11-03T20:25:20.489338Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 4,
+     "created_at": "2026-11-03T20:25:22.518766Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 5150,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 4,
+     "created_at": "2026-11-03T20:25:27.695810Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:44:53.347927Z"
+    },
+    {
+     "stage": "extract",
+     "status": "succeeded",
+     "duration_ms": 2043,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:44:55.399712Z"
+    }
+   ],
+   "invoices": [
+    {
+     "tax": "14.68",
+     "total": "91.92",
+     "currency": "EUR",
+     "subtotal": "77.24",
+     "line_items": [
+      {
+       "amount": "77.24",
+       "quantity": "2",
+       "unit_price": "38.62",
+       "description": "Pallet storage per week"
+      }
+     ],
+     "invoice_date": "2026-10-11",
+     "customer_name": "Hooli Media",
+     "supplier_name": "Meridian Freight GmbH",
+     "invoice_number": "EV-1014"
+    }
+   ],
+   "finding_codes": [],
+   "first_pass": {
+    "status": "COMPLETED",
+    "error_code": null
+   },
+   "model": "gemini-3.5-flash-lite",
+   "prompt_version": "v1",
+   "retried": 0,
+   "provider_attempts": 1
+  },
+  {
+   "file": "image-png-02.png",
+   "group": "image",
+   "category": "png",
+   "type": "png",
+   "expected_outcome": "success",
+   "expected_findings": [],
+   "invoices_expected": [
+    {
+     "currency": "AUD",
+     "customer_name": "Initech Solutions",
+     "invoice_date": "2026-08-15",
+     "invoice_number": "EV-1015",
+     "line_items_count": 4,
+     "line_items_sum": "18577.64",
+     "subtotal": "18577.64",
+     "supplier_name": "Pixel Forge Studio",
+     "tax": "1857.76",
+     "total": "20435.40"
+    }
+   ],
+   "upload": "accepted",
+   "reason": null,
+   "document_id": "5a5ad8cf-99bc-47ab-a9f4-6b0aa5389709",
+   "status": "COMPLETED",
+   "error_code": null,
+   "timed_out": false,
+   "seconds": 4.27,
+   "events": [
+    {
+     "stage": "ingest",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:45:08.935181Z"
+    },
+    {
+     "stage": "ingest",
+     "status": "succeeded",
+     "duration_ms": 278,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:45:09.212830Z"
+    },
+    {
+     "stage": "ocr",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:45:09.233180Z"
+    },
+    {
+     "stage": "ocr",
+     "status": "succeeded",
+     "duration_ms": 565,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:45:09.795223Z"
+    },
+    {
+     "stage": "embed",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:45:09.911878Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:45:09.991198Z"
+    },
+    {
+     "stage": "embed",
+     "status": "failed",
+     "duration_ms": 483,
+     "error_code": "embedding_failed",
+     "error_message": "GoogleGenerativeAIError",
+     "attempt": 1,
+     "created_at": "2026-11-03T20:45:10.406364Z"
+    },
+    {
+     "stage": "embed",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 2,
+     "created_at": "2026-11-03T20:45:12.068476Z"
+    },
+    {
+     "stage": "extract",
+     "status": "succeeded",
+     "duration_ms": 2140,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:45:12.146853Z"
+    },
+    {
+     "stage": "embed",
+     "status": "failed",
+     "duration_ms": 687,
+     "error_code": "embedding_failed",
+     "error_message": "GoogleGenerativeAIError",
+     "attempt": 2,
+     "created_at": "2026-11-03T20:45:12.787432Z"
+    }
+   ],
+   "invoices": [
+    {
+     "tax": "1857.76",
+     "total": "20435.40",
+     "currency": "AUD",
+     "subtotal": "18577.64",
+     "line_items": [
+      {
+       "amount": "5152.62",
+       "quantity": "6",
+       "unit_price": "958.77",
+       "description": "Logo design"
+      },
+      {
+       "amount": "10995.32",
+       "quantity": "2",
+       "unit_price": "5497.66",
+       "description": "Website redesign"
+      },
+      {
+       "amount": "318.94",
+       "quantity": "4",
+       "unit_price": "79.71",
+       "description": "Stock images pack"
+      },
+      {
+       "amount": "2110.96",
+       "quantity": "3",
+       "unit_price": "703.62",
+       "description": "Photography half day"
+      }
+     ],
+     "invoice_date": "2026-08-15",
+     "customer_name": "Initech Solutions",
+     "supplier_name": "Pixel Forge Studio",
+     "invoice_number": "EV-1015"
+    }
+   ],
+   "finding_codes": [
+    "line_amount_mismatch",
+    "line_amount_mismatch",
+    "line_amount_mismatch"
+   ],
+   "model": "gemini-3.5-flash-lite",
+   "prompt_version": "v1",
+   "first_pass": {
+    "status": "COMPLETED",
+    "error_code": null
+   }
+  },
+  {
+   "file": "image-png-03.png",
+   "group": "image",
+   "category": "png",
+   "type": "png",
+   "expected_outcome": "success",
+   "expected_findings": [],
+   "invoices_expected": [
+    {
+     "currency": "GBP",
+     "customer_name": "Contoso Retail GmbH",
+     "invoice_date": "2026-10-05",
+     "invoice_number": "EV-1016",
+     "line_items_count": 2,
+     "line_items_sum": "536.67",
+     "subtotal": "536.67",
+     "supplier_name": "Harlow & Finch Solicitors",
+     "tax": "107.33",
+     "total": "644.00"
+    }
+   ],
+   "upload": "accepted",
+   "reason": null,
+   "document_id": "24fa2bbb-16fa-433a-be3d-9fb63b5c51fd",
+   "status": "COMPLETED",
+   "error_code": null,
+   "timed_out": false,
+   "seconds": 6.29,
+   "events": [
+    {
+     "stage": "ingest",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:45:09.025442Z"
+    },
+    {
+     "stage": "ingest",
+     "status": "succeeded",
+     "duration_ms": 174,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:45:09.203644Z"
+    },
+    {
+     "stage": "ocr",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:45:09.266664Z"
+    },
+    {
+     "stage": "ocr",
+     "status": "succeeded",
+     "duration_ms": 526,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:45:09.785671Z"
+    },
+    {
+     "stage": "embed",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:45:09.829946Z"
+    },
+    {
+     "stage": "embed",
+     "status": "failed",
+     "duration_ms": 565,
+     "error_code": "embedding_failed",
+     "error_message": "GoogleGenerativeAIError",
+     "attempt": 1,
+     "created_at": "2026-11-03T20:45:10.406326Z"
+    },
+    {
+     "stage": "embed",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 2,
+     "created_at": "2026-11-03T20:45:10.846776Z"
+    },
+    {
+     "stage": "embed",
+     "status": "failed",
+     "duration_ms": 312,
+     "error_code": "embedding_failed",
+     "error_message": "GoogleGenerativeAIError",
+     "attempt": 2,
+     "created_at": "2026-11-03T20:45:11.167605Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:45:12.067753Z"
+    },
+    {
+     "stage": "embed",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 3,
+     "created_at": "2026-11-03T20:45:12.847750Z"
+    },
+    {
+     "stage": "embed",
+     "status": "failed",
+     "duration_ms": 330,
+     "error_code": "embedding_failed",
+     "error_message": "GoogleGenerativeAIError",
+     "attempt": 3,
+     "created_at": "2026-11-03T20:45:13.189124Z"
+    },
+    {
+     "stage": "extract",
+     "status": "succeeded",
+     "duration_ms": 2990,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:45:15.079693Z"
+    }
+   ],
+   "invoices": [
+    {
+     "tax": "107.33",
+     "total": "644.00",
+     "currency": "GBP",
+     "subtotal": "536.67",
+     "line_items": [
+      {
+       "amount": "270.39",
+       "quantity": "1",
+       "unit_price": "270.39",
+       "description": "Legal advice per hour"
+      },
+      {
+       "amount": "266.28",
+       "quantity": "3",
+       "unit_price": "88.76",
+       "description": "Company filing fee"
+      }
+     ],
+     "invoice_date": "2026-10-05",
+     "customer_name": "Contoso Retail GmbH",
+     "supplier_name": "Harlow & Finch Solicitors",
+     "invoice_number": "EV-1016"
+    }
+   ],
+   "finding_codes": [],
+   "model": "gemini-3.5-flash-lite",
+   "prompt_version": "v1",
+   "first_pass": {
+    "status": "COMPLETED",
+    "error_code": null
+   }
+  },
+  {
+   "file": "image-tiff-01.tiff",
+   "group": "image",
+   "category": "tiff",
+   "type": "tiff",
+   "expected_outcome": "success",
+   "expected_findings": [],
+   "invoices_expected": [
+    {
+     "currency": "USD",
+     "customer_name": "Wayne Holdings",
+     "invoice_date": "2026-10-21",
+     "invoice_number": "EV-1017",
+     "line_items_count": 4,
+     "line_items_sum": "3032.27",
+     "subtotal": "3032.27",
+     "supplier_name": "TechMart Electronics Inc",
+     "tax": "265.32",
+     "total": "3297.59"
+    }
+   ],
+   "upload": "accepted",
+   "reason": null,
+   "document_id": "f1cbee84-069d-41a3-bc4a-92134f20c015",
+   "status": "COMPLETED",
+   "error_code": null,
+   "timed_out": false,
+   "seconds": 3.1,
+   "events": [
+    {
+     "stage": "ingest",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:45:13.217866Z"
+    },
+    {
+     "stage": "ingest",
+     "status": "succeeded",
+     "duration_ms": 152,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:45:13.369494Z"
+    },
+    {
+     "stage": "ocr",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:45:13.383805Z"
+    },
+    {
+     "stage": "ocr",
+     "status": "succeeded",
+     "duration_ms": 520,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:45:13.900335Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:45:13.918724Z"
+    },
+    {
+     "stage": "embed",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:45:13.935764Z"
+    },
+    {
+     "stage": "embed",
+     "status": "failed",
+     "duration_ms": 372,
+     "error_code": "embedding_failed",
+     "error_message": "GoogleGenerativeAIError",
+     "attempt": 1,
+     "created_at": "2026-11-03T20:45:14.319944Z"
+    },
+    {
+     "stage": "embed",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 2,
+     "created_at": "2026-11-03T20:45:15.937923Z"
+    },
+    {
+     "stage": "extract",
+     "status": "succeeded",
+     "duration_ms": 2210,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:45:16.149718Z"
+    }
+   ],
+   "invoices": [
+    {
+     "tax": "265.32",
+     "total": "3297.59",
+     "currency": "USD",
+     "subtotal": "3032.27",
+     "line_items": [
+      {
+       "amount": "1206.91",
+       "quantity": "1",
+       "unit_price": "1206.91",
+       "description": "Laptop 14 inch"
+      },
+      {
+       "amount": "34.39",
+       "quantity": "1",
+       "unit_price": "34.39",
+       "description": "Wireless mouse"
+      },
+      {
+       "amount": "724.20",
+       "quantity": "5",
+       "unit_price": "144.84",
+       "description": "USB-C dock"
+      },
+      {
+       "amount": "1066.77",
+       "quantity": "3",
+       "unit_price": "355.59",
+       "description": "Monitor 27 inch"
+      }
+     ],
+     "invoice_date": "2026-10-21",
+     "customer_name": "Wayne Holdings",
+     "supplier_name": "TechMart Electronics Inc",
+     "invoice_number": "EV-1017"
+    }
+   ],
+   "finding_codes": [],
+   "model": "gemini-3.5-flash-lite",
+   "prompt_version": "v1",
+   "first_pass": {
+    "status": "COMPLETED",
+    "error_code": null
+   }
+  },
+  {
+   "file": "image-tiff-02.tiff",
+   "group": "image",
+   "category": "tiff",
+   "type": "tiff",
+   "expected_outcome": "success",
+   "expected_findings": [],
+   "invoices_expected": [
+    {
+     "currency": "NOK",
+     "customer_name": "Stark Components",
+     "invoice_date": "2026-08-16",
+     "invoice_number": "EV-1018",
+     "line_items_count": 1,
+     "line_items_sum": "5983.95",
+     "subtotal": "5983.95",
+     "supplier_name": "Fjord Catering AS",
+     "tax": "1495.99",
+     "total": "7479.94"
+    }
+   ],
+   "upload": "accepted",
+   "reason": null,
+   "document_id": "d6e17d50-5a32-4906-900d-a0daadb938fd",
+   "status": "COMPLETED",
+   "error_code": null,
+   "timed_out": false,
+   "seconds": 18.39,
+   "events": [
+    {
+     "stage": "ingest",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:45:15.177243Z"
+    },
+    {
+     "stage": "ingest",
+     "status": "succeeded",
+     "duration_ms": 113,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:45:15.289757Z"
+    },
+    {
+     "stage": "ocr",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:45:15.305192Z"
+    },
+    {
+     "stage": "ocr",
+     "status": "succeeded",
+     "duration_ms": 370,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:45:15.671877Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:45:15.937900Z"
+    },
+    {
+     "stage": "embed",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:45:16.945015Z"
+    },
+    {
+     "stage": "embed",
+     "status": "failed",
+     "duration_ms": 523,
+     "error_code": "embedding_failed",
+     "error_message": "GoogleGenerativeAIError",
+     "attempt": 1,
+     "created_at": "2026-11-03T20:45:17.480464Z"
+    },
+    {
+     "stage": "embed",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 2,
+     "created_at": "2026-11-03T20:45:19.958724Z"
+    },
+    {
+     "stage": "embed",
+     "status": "failed",
+     "duration_ms": 408,
+     "error_code": "embedding_failed",
+     "error_message": "GoogleGenerativeAIError",
+     "attempt": 2,
+     "created_at": "2026-11-03T20:45:20.376589Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 4434,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 1,
+     "created_at": "2026-11-03T20:45:20.384252Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 2,
+     "created_at": "2026-11-03T20:45:21.409739Z"
+    },
+    {
+     "stage": "embed",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 3,
+     "created_at": "2026-11-03T20:45:22.953197Z"
+    },
+    {
+     "stage": "embed",
+     "status": "failed",
+     "duration_ms": 381,
+     "error_code": "embedding_failed",
+     "error_message": "GoogleGenerativeAIError",
+     "attempt": 3,
+     "created_at": "2026-11-03T20:45:23.340489Z"
+    },
+    {
+     "stage": "embed",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 4,
+     "created_at": "2026-11-03T20:45:25.963125Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 4549,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 2,
+     "created_at": "2026-11-03T20:45:25.974362Z"
+    },
+    {
+     "stage": "embed",
+     "status": "failed",
+     "duration_ms": 370,
+     "error_code": "embedding_failed",
+     "error_message": "GoogleGenerativeAIError",
+     "attempt": 4,
+     "created_at": "2026-11-03T20:45:26.339949Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 3,
+     "created_at": "2026-11-03T20:45:28.014358Z"
+    },
+    {
+     "stage": "extract",
+     "status": "succeeded",
+     "duration_ms": 4499,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 3,
+     "created_at": "2026-11-03T20:45:32.527763Z"
+    }
+   ],
+   "invoices": [
+    {
+     "tax": "1495.99",
+     "total": "7479.94",
+     "currency": "NOK",
+     "subtotal": "5983.95",
+     "line_items": [
+      {
+       "amount": "5983.95",
+       "quantity": "5",
+       "unit_price": "1196.79",
+       "description": "Coffee service"
+      }
+     ],
+     "invoice_date": "2026-08-16",
+     "customer_name": "Stark Components",
+     "supplier_name": "Fjord Catering AS",
+     "invoice_number": "EV-1018"
+    }
+   ],
+   "finding_codes": [],
+   "model": "gemini-3.5-flash-lite",
+   "prompt_version": "v1",
+   "first_pass": {
+    "status": "COMPLETED",
+    "error_code": null
+   }
+  },
+  {
+   "file": "scanned-01.pdf",
+   "group": "pdf",
+   "category": "scanned_pdf",
+   "type": "scanned_pdf",
+   "expected_outcome": "success",
+   "expected_findings": [],
+   "invoices_expected": [
+    {
+     "currency": "NOK",
+     "customer_name": "Contoso Retail GmbH",
+     "invoice_date": "2026-09-21",
+     "invoice_number": "EV-1008",
+     "line_items_count": 2,
+     "line_items_sum": "8570.04",
+     "subtotal": "8570.04",
+     "supplier_name": "Fjord Catering AS",
+     "tax": "2142.51",
+     "total": "10712.55"
+    }
+   ],
+   "upload": "accepted",
+   "reason": null,
+   "document_id": "c9772266-4f07-458b-9b5e-d121aaadf8c8",
+   "status": "COMPLETED",
+   "error_code": null,
+   "timed_out": false,
+   "seconds": 3.06,
+   "events": [
+    {
+     "stage": "ingest",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:23:21.479621Z"
+    },
+    {
+     "stage": "ingest",
+     "status": "succeeded",
+     "duration_ms": 348,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:23:21.827909Z"
+    },
+    {
+     "stage": "ocr",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:23:21.868729Z"
+    },
+    {
+     "stage": "ocr",
+     "status": "succeeded",
+     "duration_ms": 1751,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:23:23.615658Z"
+    },
+    {
+     "stage": "embed",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:23:23.650205Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:23:23.666776Z"
+    },
+    {
+     "stage": "embed",
+     "status": "succeeded",
+     "duration_ms": 813,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:23:24.451641Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 4974,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 1,
+     "created_at": "2026-11-03T20:23:28.654208Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 2,
+     "created_at": "2026-11-03T20:23:28.725567Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 5007,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 2,
+     "created_at": "2026-11-03T20:23:33.783286Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 3,
+     "created_at": "2026-11-03T20:23:35.154468Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 4664,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 3,
+     "created_at": "2026-11-03T20:23:39.835268Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 4,
+     "created_at": "2026-11-03T20:23:40.455787Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 4758,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 4,
+     "created_at": "2026-11-03T20:23:45.222530Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:44:56.442234Z"
+    },
+    {
+     "stage": "extract",
+     "status": "succeeded",
+     "duration_ms": 2294,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:44:58.745342Z"
+    }
+   ],
+   "invoices": [
+    {
+     "tax": "2142.51",
+     "total": "10712.55",
+     "currency": "NOK",
+     "subtotal": "8570.04",
+     "line_items": [
+      {
+       "amount": "1650.24",
+       "quantity": "4",
+       "unit_price": "412.56",
+       "description": "Waiter per hour"
+      },
+      {
+       "amount": "6919.80",
+       "quantity": "6",
+       "unit_price": "1153.30",
+       "description": "Coffee service"
+      }
+     ],
+     "invoice_date": "2026-09-21",
+     "customer_name": "Contoso Retail GmbH",
+     "supplier_name": "Fjord Catering AS",
+     "invoice_number": "EV-1008"
+    }
+   ],
+   "finding_codes": [],
+   "first_pass": {
+    "status": "COMPLETED",
+    "error_code": null
+   },
+   "model": "gemini-3.5-flash-lite",
+   "prompt_version": "v1",
+   "retried": 0,
+   "provider_attempts": 1
+  },
+  {
+   "file": "scanned-02.pdf",
+   "group": "pdf",
+   "category": "scanned_pdf",
+   "type": "scanned_pdf",
+   "expected_outcome": "success",
+   "expected_findings": [],
+   "invoices_expected": [
+    {
+     "currency": "CAD",
+     "customer_name": "Contoso Retail GmbH",
+     "invoice_date": "2026-09-13",
+     "invoice_number": "EV-1009",
+     "line_items_count": 4,
+     "line_items_sum": "3767.47",
+     "subtotal": "3767.47",
+     "supplier_name": "GreenLeaf Cleaning Services",
+     "tax": "489.77",
+     "total": "4257.24"
+    }
+   ],
+   "upload": "accepted",
+   "reason": null,
+   "document_id": "3a0c227a-0217-4b5f-b8e6-34a7a5b32cff",
+   "status": "COMPLETED",
+   "error_code": null,
+   "timed_out": false,
+   "seconds": 3.08,
+   "events": [
+    {
+     "stage": "ingest",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:23:31.655935Z"
+    },
+    {
+     "stage": "ingest",
+     "status": "succeeded",
+     "duration_ms": 386,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:23:32.041818Z"
+    },
+    {
+     "stage": "ocr",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:23:32.059636Z"
+    },
+    {
+     "stage": "ocr",
+     "status": "succeeded",
+     "duration_ms": 1065,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:23:33.119891Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:23:33.142821Z"
+    },
+    {
+     "stage": "embed",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:23:33.159948Z"
+    },
+    {
+     "stage": "embed",
+     "status": "succeeded",
+     "duration_ms": 1075,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:23:34.231786Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 4253,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 1,
+     "created_at": "2026-11-03T20:23:37.413201Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 2,
+     "created_at": "2026-11-03T20:23:38.456937Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 4959,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 2,
+     "created_at": "2026-11-03T20:23:43.430154Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 3,
+     "created_at": "2026-11-03T20:23:45.465428Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 4689,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 3,
+     "created_at": "2026-11-03T20:23:50.174949Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 4,
+     "created_at": "2026-11-03T20:23:51.216029Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 4822,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 4,
+     "created_at": "2026-11-03T20:23:56.045589Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:44:59.544723Z"
+    },
+    {
+     "stage": "extract",
+     "status": "succeeded",
+     "duration_ms": 2339,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:45:01.893625Z"
+    }
+   ],
+   "invoices": [
+    {
+     "tax": "489.77",
+     "total": "4257.24",
+     "currency": "CAD",
+     "subtotal": "3767.47",
+     "line_items": [
+      {
+       "amount": "184.40",
+       "quantity": "4",
+       "unit_price": "46.10",
+       "description": "Sanitiser refill"
+      },
+      {
+       "amount": "1022.48",
+       "quantity": "8",
+       "unit_price": "127.81",
+       "description": "Window cleaning"
+      },
+      {
+       "amount": "2006.52",
+       "quantity": "6",
+       "unit_price": "334.42",
+       "description": "Office cleaning weekly"
+      },
+      {
+       "amount": "554.07",
+       "quantity": "3",
+       "unit_price": "184.69",
+       "description": "Carpet shampoo"
+      }
+     ],
+     "invoice_date": "2026-09-13",
+     "customer_name": "Contoso Retail GmbH",
+     "supplier_name": "GreenLeaf Cleaning Services",
+     "invoice_number": "EV-1009"
+    }
+   ],
+   "finding_codes": [],
+   "first_pass": {
+    "status": "COMPLETED",
+    "error_code": null
+   },
+   "model": "gemini-3.5-flash-lite",
+   "prompt_version": "v1",
+   "retried": 0,
+   "provider_attempts": 1
+  },
+  {
+   "file": "scanned-03.pdf",
+   "group": "pdf",
+   "category": "scanned_pdf",
+   "type": "scanned_pdf",
+   "expected_outcome": "success",
+   "expected_findings": [],
+   "invoices_expected": [
+    {
+     "currency": "EUR",
+     "customer_name": null,
+     "invoice_date": "2026-09-01",
+     "invoice_number": "EV-1010",
+     "line_items_count": 2,
+     "line_items_sum": "106.14",
+     "subtotal": "106.14",
+     "supplier_name": "Northwind Supplies Ltd",
+     "tax": "24.41",
+     "total": "130.55"
+    }
+   ],
+   "upload": "accepted",
+   "reason": null,
+   "document_id": "e35ba56e-e87f-44c2-96e1-9c895d42b063",
+   "status": "COMPLETED",
+   "error_code": null,
+   "timed_out": false,
+   "seconds": 16.23,
+   "events": [
+    {
+     "stage": "ingest",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:45:16.380492Z"
+    },
+    {
+     "stage": "ingest",
+     "status": "succeeded",
+     "duration_ms": 566,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:45:16.948440Z"
+    },
+    {
+     "stage": "ocr",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:45:16.993254Z"
+    },
+    {
+     "stage": "ocr",
+     "status": "succeeded",
+     "duration_ms": 1412,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:45:18.402388Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:45:18.449386Z"
+    },
+    {
+     "stage": "embed",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:45:21.952982Z"
+    },
+    {
+     "stage": "embed",
+     "status": "failed",
+     "duration_ms": 349,
+     "error_code": "embedding_failed",
+     "error_message": "GoogleGenerativeAIError",
+     "attempt": 1,
+     "created_at": "2026-11-03T20:45:22.318369Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 5093,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 1,
+     "created_at": "2026-11-03T20:45:23.556878Z"
+    },
+    {
+     "stage": "embed",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 2,
+     "created_at": "2026-11-03T20:45:23.951732Z"
+    },
+    {
+     "stage": "embed",
+     "status": "failed",
+     "duration_ms": 323,
+     "error_code": "embedding_failed",
+     "error_message": "GoogleGenerativeAIError",
+     "attempt": 2,
+     "created_at": "2026-11-03T20:45:24.285964Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 2,
+     "created_at": "2026-11-03T20:45:24.587254Z"
+    },
+    {
+     "stage": "embed",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 3,
+     "created_at": "2026-11-03T20:45:27.036189Z"
+    },
+    {
+     "stage": "embed",
+     "status": "failed",
+     "duration_ms": 309,
+     "error_code": "embedding_failed",
+     "error_message": "GoogleGenerativeAIError",
+     "attempt": 3,
+     "created_at": "2026-11-03T20:45:27.356212Z"
+    },
+    {
+     "stage": "embed",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 4,
+     "created_at": "2026-11-03T20:45:27.974775Z"
+    },
+    {
+     "stage": "embed",
+     "status": "failed",
+     "duration_ms": 602,
+     "error_code": "embedding_failed",
+     "error_message": "GoogleGenerativeAIError",
+     "attempt": 4,
+     "created_at": "2026-11-03T20:45:28.585082Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 4707,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 2,
+     "created_at": "2026-11-03T20:45:29.317009Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 3,
+     "created_at": "2026-11-03T20:45:30.014057Z"
+    },
+    {
+     "stage": "extract",
+     "status": "succeeded",
+     "duration_ms": 1954,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 3,
+     "created_at": "2026-11-03T20:45:31.975986Z"
+    }
+   ],
+   "invoices": [
+    {
+     "tax": "24.41",
+     "total": "130.55",
+     "currency": "EUR",
+     "subtotal": "106.14",
+     "line_items": [
+      {
+       "amount": "78.36",
+       "quantity": "3",
+       "unit_price": "26.12",
+       "description": "A4 paper box"
+      },
+      {
+       "amount": "27.78",
+       "quantity": "3",
+       "unit_price": "9.26",
+       "description": "Whiteboard markers"
+      }
+     ],
+     "invoice_date": "2026-09-01",
+     "customer_name": null,
+     "supplier_name": "Northwind Supplies Ltd",
+     "invoice_number": "EV-1010"
+    }
+   ],
+   "finding_codes": [],
+   "model": "gemini-3.5-flash-lite",
+   "prompt_version": "v1",
+   "first_pass": {
+    "status": "COMPLETED",
+    "error_code": null
+   }
+  },
+  {
+   "file": "sheet-csv-01.csv",
+   "group": "spreadsheet",
+   "category": "csv",
+   "type": "csv",
+   "expected_outcome": "success",
+   "expected_findings": [],
+   "invoices_expected": [
+    {
+     "currency": "CAD",
+     "customer_name": "Contoso Retail GmbH",
+     "invoice_date": "2026-07-25",
+     "invoice_number": "EV-1019",
+     "line_items_count": 2,
+     "line_items_sum": "1741.36",
+     "subtotal": null,
+     "supplier_name": "GreenLeaf Cleaning Services",
+     "tax": null,
+     "total": "1967.74"
+    },
+    {
+     "currency": "EUR",
+     "customer_name": "Umbrella Logistics",
+     "invoice_date": "2026-09-25",
+     "invoice_number": "EV-1020",
+     "line_items_count": 2,
+     "line_items_sum": "143.07",
+     "subtotal": null,
+     "supplier_name": "Northwind Supplies Ltd",
+     "tax": null,
+     "total": "175.98"
+    }
+   ],
+   "upload": "accepted",
+   "reason": null,
+   "document_id": "65c62421-caee-4002-b74e-f60ff291f34c",
+   "status": "COMPLETED",
+   "error_code": null,
+   "timed_out": false,
+   "seconds": 16.38,
+   "events": [
+    {
+     "stage": "ingest",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:20:06.247193Z"
+    },
+    {
+     "stage": "ingest",
+     "status": "succeeded",
+     "duration_ms": 65,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:20:06.315380Z"
+    },
+    {
+     "stage": "embed",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:20:06.447417Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:20:06.447580Z"
+    },
+    {
+     "stage": "embed",
+     "status": "succeeded",
+     "duration_ms": 1097,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:20:07.534910Z"
+    },
+    {
+     "stage": "extract",
+     "status": "succeeded",
+     "duration_ms": 15484,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:20:21.937575Z"
+    }
+   ],
+   "invoices": [
+    {
+     "tax": null,
+     "total": "1967.74",
+     "currency": "CAD",
+     "subtotal": null,
+     "line_items": [
+      {
+       "amount": "1553.04",
+       "quantity": "8",
+       "unit_price": "194.13",
+       "description": "Carpet shampoo"
+      },
+      {
+       "amount": "188.32",
+       "quantity": "4",
+       "unit_price": "47.08",
+       "description": "Sanitiser refill"
+      }
+     ],
+     "invoice_date": "2026-07-25",
+     "customer_name": "Contoso Retail GmbH",
+     "supplier_name": "GreenLeaf Cleaning Services",
+     "invoice_number": "EV-1019"
+    },
+    {
+     "tax": null,
+     "total": "175.98",
+     "currency": "EUR",
+     "subtotal": null,
+     "line_items": [
+      {
+       "amount": "81.75",
+       "quantity": "5",
+       "unit_price": "16.35",
+       "description": "Stapler heavy duty"
+      },
+      {
+       "amount": "61.32",
+       "quantity": "7",
+       "unit_price": "8.76",
+       "description": "Whiteboard markers"
+      }
+     ],
+     "invoice_date": "2026-09-25",
+     "customer_name": "Umbrella Logistics",
+     "supplier_name": "Northwind Supplies Ltd",
+     "invoice_number": "EV-1020"
+    }
+   ],
+   "finding_codes": [],
+   "model": "gemini-3.6-flash",
+   "prompt_version": "v1",
+   "first_pass": {
+    "status": "COMPLETED",
+    "error_code": null
+   }
+  },
+  {
+   "file": "sheet-csv-02.csv",
+   "group": "spreadsheet",
+   "category": "csv",
+   "type": "csv",
+   "expected_outcome": "success",
+   "expected_findings": [],
+   "invoices_expected": [
+    {
+     "currency": "USD",
+     "customer_name": "Contoso Retail GmbH",
+     "invoice_date": "2026-07-12",
+     "invoice_number": "EV-1021",
+     "line_items_count": 1,
+     "line_items_sum": "207.65",
+     "subtotal": null,
+     "supplier_name": "Sunrise Bakery",
+     "tax": null,
+     "total": "224.78"
+    }
+   ],
+   "upload": "accepted",
+   "reason": null,
+   "document_id": "18921053-8b0e-411f-81db-192baccc7fb3",
+   "status": "COMPLETED",
+   "error_code": null,
+   "timed_out": false,
+   "seconds": 13.27,
+   "events": [
+    {
+     "stage": "ingest",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:20:06.259498Z"
+    },
+    {
+     "stage": "ingest",
+     "status": "succeeded",
+     "duration_ms": 54,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:20:06.315361Z"
+    },
+    {
+     "stage": "embed",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:20:06.360281Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:20:06.447447Z"
+    },
+    {
+     "stage": "embed",
+     "status": "succeeded",
+     "duration_ms": 892,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:20:07.241013Z"
+    },
+    {
+     "stage": "extract",
+     "status": "succeeded",
+     "duration_ms": 12955,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:20:19.408084Z"
+    }
+   ],
+   "invoices": [
+    {
+     "tax": null,
+     "total": "224.78",
+     "currency": "USD",
+     "subtotal": "207.65",
+     "line_items": [
+      {
+       "amount": "207.65",
+       "quantity": "5",
+       "unit_price": "41.53",
+       "description": "Birthday cake"
+      }
+     ],
+     "invoice_date": "2026-07-12",
+     "customer_name": "Contoso Retail GmbH",
+     "supplier_name": "Sunrise Bakery",
+     "invoice_number": "EV-1021"
+    }
+   ],
+   "finding_codes": [],
+   "model": "gemini-3.6-flash",
+   "prompt_version": "v1",
+   "first_pass": {
+    "status": "COMPLETED",
+    "error_code": null
+   }
+  },
+  {
+   "file": "sheet-csv-03.csv",
+   "group": "spreadsheet",
+   "category": "csv",
+   "type": "csv",
+   "expected_outcome": "success",
+   "expected_findings": [],
+   "invoices_expected": [
+    {
+     "currency": "SEK",
+     "customer_name": null,
+     "invoice_date": "2026-10-09",
+     "invoice_number": "EV-1022",
+     "line_items_count": 4,
+     "line_items_sum": "13284.05",
+     "subtotal": null,
+     "supplier_name": "Cirrus Cloud Services AB",
+     "tax": null,
+     "total": "16605.06"
+    },
+    {
+     "currency": "GBP",
+     "customer_name": null,
+     "invoice_date": "2026-07-23",
+     "invoice_number": "EV-1023",
+     "line_items_count": 3,
+     "line_items_sum": "8281.75",
+     "subtotal": null,
+     "supplier_name": "Orbit Engineering Co",
+     "tax": null,
+     "total": "9938.10"
+    }
+   ],
+   "upload": "accepted",
+   "reason": null,
+   "document_id": "ed8b8472-f29c-481e-867e-f035e1c1e106",
+   "status": "COMPLETED",
+   "error_code": null,
+   "timed_out": false,
+   "seconds": 3.09,
+   "events": [
+    {
+     "stage": "ingest",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:20:19.514153Z"
+    },
+    {
+     "stage": "ingest",
+     "status": "succeeded",
+     "duration_ms": 52,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:20:19.563511Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:20:19.618229Z"
+    },
+    {
+     "stage": "embed",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:20:19.618581Z"
+    },
+    {
+     "stage": "embed",
+     "status": "succeeded",
+     "duration_ms": 844,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:20:20.451204Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 4860,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 1,
+     "created_at": "2026-11-03T20:20:24.497775Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 2,
+     "created_at": "2026-11-03T20:20:25.540012Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 4462,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 2,
+     "created_at": "2026-11-03T20:20:30.016304Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 3,
+     "created_at": "2026-11-03T20:20:31.059430Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 4682,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 3,
+     "created_at": "2026-11-03T20:20:35.767681Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 4,
+     "created_at": "2026-11-03T20:20:35.800442Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 4880,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 4,
+     "created_at": "2026-11-03T20:20:40.691068Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:31:40.311397Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 5507,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 1,
+     "created_at": "2026-11-03T20:31:45.827368Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 2,
+     "created_at": "2026-11-03T20:31:45.865078Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 5149,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 2,
+     "created_at": "2026-11-03T20:31:51.020998Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 3,
+     "created_at": "2026-11-03T20:31:53.053215Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 4382,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 3,
+     "created_at": "2026-11-03T20:31:57.448529Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 4,
+     "created_at": "2026-11-03T20:31:57.474218Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 5709,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 4,
+     "created_at": "2026-11-03T20:32:03.196088Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:45:02.666290Z"
+    },
+    {
+     "stage": "extract",
+     "status": "succeeded",
+     "duration_ms": 2706,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:45:05.380657Z"
+    }
+   ],
+   "invoices": [
+    {
+     "tax": null,
+     "total": "16605.06",
+     "currency": "SEK",
+     "subtotal": null,
+     "line_items": [
+      {
+       "amount": "4178.88",
+       "quantity": "1",
+       "unit_price": "4178.88",
+       "description": "Managed hosting"
+      },
+      {
+       "amount": "5962.0",
+       "quantity": "8",
+       "unit_price": "745.25",
+       "description": "Backup storage"
+      },
+      {
+       "amount": "429.1",
+       "quantity": "2",
+       "unit_price": "214.55",
+       "description": "Domain renewal"
+      },
+      {
+       "amount": "2714.07",
+       "quantity": "3",
+       "unit_price": "904.69",
+       "description": "Support hours"
+      }
+     ],
+     "invoice_date": "2026-10-09",
+     "customer_name": null,
+     "supplier_name": "Cirrus Cloud Services AB",
+     "invoice_number": "EV-1022"
+    },
+    {
+     "tax": null,
+     "total": "9938.1",
+     "currency": "GBP",
+     "subtotal": null,
+     "line_items": [
+      {
+       "amount": "6079.68",
+       "quantity": "8",
+       "unit_price": "759.96",
+       "description": "Structural report"
+      },
+      {
+       "amount": "2010.24",
+       "quantity": "4",
+       "unit_price": "502.56",
+       "description": "Consulting day"
+      },
+      {
+       "amount": "191.83",
+       "quantity": "1",
+       "unit_price": "191.83",
+       "description": "CAD drawing"
+      }
+     ],
+     "invoice_date": "2026-07-23",
+     "customer_name": null,
+     "supplier_name": "Orbit Engineering Co",
+     "invoice_number": "EV-1023"
+    }
+   ],
+   "finding_codes": [],
+   "first_pass": {
+    "status": "COMPLETED",
+    "error_code": null
+   },
+   "retried": 0,
+   "provider_attempts": 2,
+   "model": "gemini-3.5-flash-lite",
+   "prompt_version": "v1"
+  },
+  {
+   "file": "sheet-xls-01.xls",
+   "group": "spreadsheet",
+   "category": "xls",
+   "type": "xls",
+   "expected_outcome": "success",
+   "expected_findings": [],
+   "invoices_expected": [
+    {
+     "currency": "CAD",
+     "customer_name": "Globex Ltd",
+     "invoice_date": "2026-07-05",
+     "invoice_number": "EV-1029",
+     "line_items_count": 4,
+     "line_items_sum": "1899.72",
+     "subtotal": null,
+     "supplier_name": "GreenLeaf Cleaning Services",
+     "tax": null,
+     "total": "2146.68"
+    },
+    {
+     "currency": "EUR",
+     "customer_name": "Globex Ltd",
+     "invoice_date": "2026-09-17",
+     "invoice_number": "EV-1030",
+     "line_items_count": 4,
+     "line_items_sum": "615.34",
+     "subtotal": null,
+     "supplier_name": "Northwind Supplies Ltd",
+     "tax": null,
+     "total": "756.87"
+    }
+   ],
+   "upload": "accepted",
+   "reason": null,
+   "document_id": "82a94910-4fb8-46ef-bd92-afbe16ac9a24",
+   "status": "COMPLETED",
+   "error_code": null,
+   "timed_out": false,
+   "seconds": 3.05,
+   "events": [
+    {
+     "stage": "ingest",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:20:22.650189Z"
+    },
+    {
+     "stage": "ingest",
+     "status": "succeeded",
+     "duration_ms": 71,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:20:22.718600Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:20:22.763308Z"
+    },
+    {
+     "stage": "embed",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:20:22.787816Z"
+    },
+    {
+     "stage": "embed",
+     "status": "succeeded",
+     "duration_ms": 846,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:20:23.631239Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 4289,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 1,
+     "created_at": "2026-11-03T20:20:27.064348Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 2,
+     "created_at": "2026-11-03T20:20:28.100109Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 5461,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 2,
+     "created_at": "2026-11-03T20:20:33.582712Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 3,
+     "created_at": "2026-11-03T20:20:33.636397Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 5083,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 3,
+     "created_at": "2026-11-03T20:20:38.734001Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 4,
+     "created_at": "2026-11-03T20:20:38.765471Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 5064,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 4,
+     "created_at": "2026-11-03T20:20:43.842630Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:32:03.693503Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 5155,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 1,
+     "created_at": "2026-11-03T20:32:08.860154Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 2,
+     "created_at": "2026-11-03T20:32:08.894694Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 4371,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 2,
+     "created_at": "2026-11-03T20:32:13.286416Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 3,
+     "created_at": "2026-11-03T20:32:15.379409Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 4929,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 3,
+     "created_at": "2026-11-03T20:32:20.323581Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 4,
+     "created_at": "2026-11-03T20:32:24.371235Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 4744,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 4,
+     "created_at": "2026-11-03T20:32:29.127611Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:45:05.773656Z"
+    },
+    {
+     "stage": "extract",
+     "status": "succeeded",
+     "duration_ms": 2974,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:45:08.755504Z"
+    }
+   ],
+   "invoices": [
+    {
+     "tax": null,
+     "total": "2146.68",
+     "currency": "CAD",
+     "subtotal": null,
+     "line_items": [
+      {
+       "amount": "277.56",
+       "quantity": "6",
+       "unit_price": "46.26",
+       "description": "Sanitiser refill"
+      },
+      {
+       "amount": "396.1",
+       "quantity": "2",
+       "unit_price": "198.05",
+       "description": "Carpet shampoo"
+      },
+      {
+       "amount": "1088.52",
+       "quantity": "3",
+       "unit_price": "362.84",
+       "description": "Office cleaning weekly"
+      },
+      {
+       "amount": "137.54",
+       "quantity": "1",
+       "unit_price": "137.54",
+       "description": "Window cleaning"
+      }
+     ],
+     "invoice_date": "2026-07-05",
+     "customer_name": "Globex Ltd",
+     "supplier_name": "GreenLeaf Cleaning Services",
+     "invoice_number": "EV-1029"
+    },
+    {
+     "tax": null,
+     "total": "756.87",
+     "currency": "EUR",
+     "subtotal": null,
+     "line_items": [
+      {
+       "amount": "294.84",
+       "quantity": "3",
+       "unit_price": "98.28",
+       "description": "Toner cartridge"
+      },
+      {
+       "amount": "106.68",
+       "quantity": "6",
+       "unit_price": "17.78",
+       "description": "Stapler heavy duty"
+      },
+      {
+       "amount": "168.07",
+       "quantity": "7",
+       "unit_price": "24.01",
+       "description": "A4 paper box"
+      },
+      {
+       "amount": "45.75",
+       "quantity": "5",
+       "unit_price": "9.15",
+       "description": "Whiteboard markers"
+      }
+     ],
+     "invoice_date": "2026-09-17",
+     "customer_name": "Globex Ltd",
+     "supplier_name": "Northwind Supplies Ltd",
+     "invoice_number": "EV-1030"
+    }
+   ],
+   "finding_codes": [],
+   "first_pass": {
+    "status": "COMPLETED",
+    "error_code": null
+   },
+   "retried": 0,
+   "provider_attempts": 2,
+   "model": "gemini-3.5-flash-lite",
+   "prompt_version": "v1"
+  },
+  {
+   "file": "sheet-xls-02.xls",
+   "group": "spreadsheet",
+   "category": "xls",
+   "type": "xls",
+   "expected_outcome": "success",
+   "expected_findings": [],
+   "invoices_expected": [
+    {
+     "currency": "USD",
+     "customer_name": "Fabrikam Studio",
+     "invoice_date": "2026-10-16",
+     "invoice_number": "EV-1031",
+     "line_items_count": 2,
+     "line_items_sum": "22.81",
+     "subtotal": null,
+     "supplier_name": "Sunrise Bakery",
+     "tax": null,
+     "total": "24.69"
+    }
+   ],
+   "upload": "accepted",
+   "reason": null,
+   "document_id": "15c13bd5-d6fe-4d54-9095-e2cbafde1e72",
+   "status": "COMPLETED",
+   "error_code": null,
+   "timed_out": false,
+   "seconds": 19.31,
+   "events": [
+    {
+     "stage": "ingest",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:20:40.969148Z"
+    },
+    {
+     "stage": "ingest",
+     "status": "succeeded",
+     "duration_ms": 47,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:20:41.014856Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:20:41.030684Z"
+    },
+    {
+     "stage": "embed",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:20:41.046091Z"
+    },
+    {
+     "stage": "embed",
+     "status": "succeeded",
+     "duration_ms": 1013,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:20:42.055819Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 4748,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 1,
+     "created_at": "2026-11-03T20:20:45.792948Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 2,
+     "created_at": "2026-11-03T20:20:46.827142Z"
+    },
+    {
+     "stage": "extract",
+     "status": "succeeded",
+     "duration_ms": 12793,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 2,
+     "created_at": "2026-11-03T20:20:59.624596Z"
+    }
+   ],
+   "invoices": [
+    {
+     "tax": null,
+     "total": "24.69",
+     "currency": "USD",
+     "subtotal": null,
+     "line_items": [
+      {
+       "amount": "13.42",
+       "quantity": "2",
+       "unit_price": "6.71",
+       "description": "Sourdough loaf"
+      },
+      {
+       "amount": "9.39",
+       "quantity": "3",
+       "unit_price": "3.13",
+       "description": "Croissant"
+      }
+     ],
+     "invoice_date": "2026-10-16",
+     "customer_name": "Fabrikam Studio",
+     "supplier_name": "Sunrise Bakery",
+     "invoice_number": "EV-1031"
+    }
+   ],
+   "finding_codes": [],
+   "model": "gemini-3.6-flash",
+   "prompt_version": "v1",
+   "first_pass": {
+    "status": "COMPLETED",
+    "error_code": null
+   }
+  },
+  {
+   "file": "sheet-xlsx-01.xlsx",
+   "group": "spreadsheet",
+   "category": "xlsx",
+   "type": "xlsx",
+   "expected_outcome": "success",
+   "expected_findings": [],
+   "invoices_expected": [
+    {
+     "currency": "EUR",
+     "customer_name": "Hooli Media",
+     "invoice_date": "2026-07-13",
+     "invoice_number": "EV-1024",
+     "line_items_count": 3,
+     "line_items_sum": "934.32",
+     "subtotal": null,
+     "supplier_name": "Meridian Freight GmbH",
+     "tax": null,
+     "total": "1111.84"
+    },
+    {
+     "currency": "AUD",
+     "customer_name": "Fabrikam Studio",
+     "invoice_date": "2026-09-27",
+     "invoice_number": "EV-1025",
+     "line_items_count": 1,
+     "line_items_sum": "6969.60",
+     "subtotal": null,
+     "supplier_name": "Pixel Forge Studio",
+     "tax": null,
+     "total": "7666.56"
+    }
+   ],
+   "upload": "accepted",
+   "reason": null,
+   "document_id": "6e929f8c-6b1c-478e-9d4b-463822574b40",
+   "status": "COMPLETED",
+   "error_code": null,
+   "timed_out": false,
+   "seconds": 15.28,
+   "events": [
+    {
+     "stage": "ingest",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:20:43.954249Z"
+    },
+    {
+     "stage": "ingest",
+     "status": "succeeded",
+     "duration_ms": 51,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:20:44.004146Z"
+    },
+    {
+     "stage": "embed",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:20:44.021843Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:20:44.031512Z"
+    },
+    {
+     "stage": "embed",
+     "status": "succeeded",
+     "duration_ms": 898,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:20:44.910881Z"
+    },
+    {
+     "stage": "extract",
+     "status": "failed",
+     "duration_ms": 4385,
+     "error_code": "extraction_failed",
+     "error_message": "GoogleRateLimitError",
+     "attempt": 1,
+     "created_at": "2026-11-03T20:20:48.429603Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 2,
+     "created_at": "2026-11-03T20:20:49.460971Z"
+    },
+    {
+     "stage": "extract",
+     "status": "succeeded",
+     "duration_ms": 9703,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 2,
+     "created_at": "2026-11-03T20:20:59.177279Z"
+    }
+   ],
+   "invoices": [
+    {
+     "tax": null,
+     "total": "1111.84",
+     "currency": "EUR",
+     "subtotal": null,
+     "line_items": [
+      {
+       "amount": "67.7",
+       "quantity": "5",
+       "unit_price": "13.54",
+       "description": "Courier parcel"
+      },
+      {
+       "amount": "276.64",
+       "quantity": "8",
+       "unit_price": "34.58",
+       "description": "Pallet storage per week"
+      },
+      {
+       "amount": "589.98",
+       "quantity": "3",
+       "unit_price": "196.66",
+       "description": "Customs clearance"
+      }
+     ],
+     "invoice_date": "2026-07-13",
+     "customer_name": "Hooli Media",
+     "supplier_name": "Meridian Freight GmbH",
+     "invoice_number": "EV-1024"
+    },
+    {
+     "tax": null,
+     "total": "7666.56",
+     "currency": "AUD",
+     "subtotal": null,
+     "line_items": [
+      {
+       "amount": "6969.6",
+       "quantity": "8",
+       "unit_price": "871.2",
+       "description": "Logo design"
+      }
+     ],
+     "invoice_date": "2026-09-27",
+     "customer_name": "Fabrikam Studio",
+     "supplier_name": "Pixel Forge Studio",
+     "invoice_number": "EV-1025"
+    }
+   ],
+   "finding_codes": [],
+   "model": "gemini-3.6-flash",
+   "prompt_version": "v1",
+   "first_pass": {
+    "status": "COMPLETED",
+    "error_code": null
+   }
+  },
+  {
+   "file": "sheet-xlsx-02.xlsx",
+   "group": "spreadsheet",
+   "category": "xlsx",
+   "type": "xlsx",
+   "expected_outcome": "success",
+   "expected_findings": [],
+   "invoices_expected": [
+    {
+     "currency": "GBP",
+     "customer_name": "Globex Ltd",
+     "invoice_date": "2026-07-01",
+     "invoice_number": "EV-1026",
+     "line_items_count": 2,
+     "line_items_sum": "542.55",
+     "subtotal": null,
+     "supplier_name": "Harlow & Finch Solicitors",
+     "tax": null,
+     "total": "651.06"
+    }
+   ],
+   "upload": "accepted",
+   "reason": null,
+   "document_id": "a04b7b0f-2b0e-42f9-a621-abe6ae78515a",
+   "status": "COMPLETED",
+   "error_code": null,
+   "timed_out": false,
+   "seconds": 17.32,
+   "events": [
+    {
+     "stage": "ingest",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:20:59.260700Z"
+    },
+    {
+     "stage": "ingest",
+     "status": "succeeded",
+     "duration_ms": 257,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:20:59.515621Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:20:59.566118Z"
+    },
+    {
+     "stage": "embed",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:20:59.570776Z"
+    },
+    {
+     "stage": "embed",
+     "status": "succeeded",
+     "duration_ms": 753,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:21:00.322310Z"
+    },
+    {
+     "stage": "extract",
+     "status": "succeeded",
+     "duration_ms": 16606,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:21:16.177821Z"
+    }
+   ],
+   "invoices": [
+    {
+     "tax": null,
+     "total": "651.06",
+     "currency": "GBP",
+     "subtotal": null,
+     "line_items": [
+      {
+       "amount": "458.08",
+       "quantity": "7",
+       "unit_price": "65.44",
+       "description": "Notary signature"
+      },
+      {
+       "amount": "84.47",
+       "quantity": "1",
+       "unit_price": "84.47",
+       "description": "Company filing fee"
+      }
+     ],
+     "invoice_date": "2026-07-01",
+     "customer_name": "Globex Ltd",
+     "supplier_name": "Harlow & Finch Solicitors",
+     "invoice_number": "EV-1026"
+    }
+   ],
+   "finding_codes": [],
+   "model": "gemini-3.6-flash",
+   "prompt_version": "v1",
+   "first_pass": {
+    "status": "COMPLETED",
+    "error_code": null
+   }
+  },
+  {
+   "file": "sheet-xlsx-03.xlsx",
+   "group": "spreadsheet",
+   "category": "xlsx",
+   "type": "xlsx",
+   "expected_outcome": "success",
+   "expected_findings": [],
+   "invoices_expected": [
+    {
+     "currency": "USD",
+     "customer_name": "Hooli Media",
+     "invoice_date": "2026-07-18",
+     "invoice_number": "EV-1027",
+     "line_items_count": 2,
+     "line_items_sum": "1242.66",
+     "subtotal": null,
+     "supplier_name": "TechMart Electronics Inc",
+     "tax": null,
+     "total": "1351.39"
+    },
+    {
+     "currency": "NOK",
+     "customer_name": "Globex Ltd",
+     "invoice_date": "2026-09-06",
+     "invoice_number": "EV-1028",
+     "line_items_count": 1,
+     "line_items_sum": "9839.68",
+     "subtotal": null,
+     "supplier_name": "Fjord Catering AS",
+     "tax": null,
+     "total": "12299.60"
+    }
+   ],
+   "upload": "accepted",
+   "reason": null,
+   "document_id": "731079b8-d24f-4424-bf2b-4badd58c1f93",
+   "status": "COMPLETED",
+   "error_code": null,
+   "timed_out": false,
+   "seconds": 21.37,
+   "events": [
+    {
+     "stage": "ingest",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:21:00.286531Z"
+    },
+    {
+     "stage": "ingest",
+     "status": "succeeded",
+     "duration_ms": 46,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:21:00.331722Z"
+    },
+    {
+     "stage": "embed",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:21:00.542264Z"
+    },
+    {
+     "stage": "embed",
+     "status": "succeeded",
+     "duration_ms": 834,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:21:01.361827Z"
+    },
+    {
+     "stage": "extract",
+     "status": "started",
+     "duration_ms": null,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:21:01.543192Z"
+    },
+    {
+     "stage": "extract",
+     "status": "succeeded",
+     "duration_ms": 19311,
+     "error_code": null,
+     "error_message": null,
+     "attempt": 1,
+     "created_at": "2026-11-03T20:21:20.861377Z"
+    }
+   ],
+   "invoices": [
+    {
+     "tax": null,
+     "total": "1351.39",
+     "currency": "USD",
+     "subtotal": null,
+     "line_items": [
+      {
+       "amount": "618.72",
+       "quantity": "4",
+       "unit_price": "154.68",
+       "description": "USB-C dock"
+      },
+      {
+       "amount": "623.94",
+       "quantity": "2",
+       "unit_price": "311.97",
+       "description": "Monitor 27 inch"
+      }
+     ],
+     "invoice_date": "2026-07-18",
+     "customer_name": "Hooli Media",
+     "supplier_name": "TechMart Electronics Inc",
+     "invoice_number": "EV-1027"
+    },
+    {
+     "tax": null,
+     "total": "12299.6",
+     "currency": "NOK",
+     "subtotal": null,
+     "line_items": [
+      {
+       "amount": "9839.68",
+       "quantity": "8",
+       "unit_price": "1229.96",
+       "description": "Coffee service"
+      }
+     ],
+     "invoice_date": "2026-09-06",
+     "customer_name": "Globex Ltd",
+     "supplier_name": "Fjord Catering AS",
+     "invoice_number": "EV-1028"
+    }
+   ],
+   "finding_codes": [],
+   "model": "gemini-3.6-flash",
+   "prompt_version": "v1",
+   "first_pass": {
+    "status": "COMPLETED",
+    "error_code": null
+   }
+  }
+ ]
+}

@@ -2,7 +2,7 @@
 
 Upload invoices and receipts (PDF, scanned PDF, JPG/PNG/TIFF, XLSX/XLS, CSV). The system reads the text (directly, or with OCR for scans), extracts structured invoice data with an LLM, validates it, lets a person review and correct it in a web UI, and makes everything searchable.
 
-Docs: [API](docs/api.md) · [frontend](docs/frontend.md) · [database](docs/database-schema.md) · [testing](docs/testing.md) · [performance](docs/performance.md) · [monitoring](docs/monitoring.md) · [security](docs/security.md) · [AI disclosure](docs/ai-disclosure.md)
+Docs: [API](docs/api.md) · [frontend](docs/frontend.md) · [database](docs/database-schema.md) · [testing](docs/testing.md) · [evaluation](eval/results/report.md) · [performance](docs/performance.md) · [monitoring](docs/monitoring.md) · [security](docs/security.md) · [AI disclosure](docs/ai-disclosure.md)
 
 ## Quick start
 
@@ -99,6 +99,7 @@ make check     # lint, typecheck and all tests
 make lint      # ruff, mypy, eslint, tsc
 make e2e       # one browser journey against the running stack (make up first; installs Chromium once)
 make bench     # slow large-document benchmarks
+make eval      # evaluation on the labelled dataset: real model calls, run by hand (see Evaluation)
 ```
 
 Run one backend test file:
@@ -108,6 +109,22 @@ docker compose --profile test run --build --rm backend-test pytest tests/unit/te
 ```
 
 What each layer covers: [docs/testing.md](docs/testing.md).
+
+## Evaluation
+
+`make eval` runs a labelled dataset (33 generated documents: every file type, four image quality levels, absent fields, seeded errors, and files that must fail) through the real API and model and writes [eval/results/report.md](eval/results/report.md). How it works, the scoring rules and how to add real documents: [eval/README.md](eval/README.md).
+
+Results of the committed run (details, failures and limits are in the report):
+
+| Measure | Result |
+|---|---|
+| Documents expected to succeed that finished | 100% (29 of 29) |
+| Expected failures and refusals handled as labelled | 100% (4 of 4); no unexpected failure |
+| Documents with every field correct | 86.2% (25 of 29) |
+| Seeded validation errors flagged | 3 of 3; 0 of 26 clean documents sent to review |
+| Typical time, PDF or image, end to end | about 3 s (median); 4.7 documents per minute at concurrency 2 |
+
+The weak spot is image quality: the lowest-quality image gave six wrong fields (including an amount off by a factor of 100) and was not sent to review. The run used two extraction models because of the provider's free-tier daily limit; the report splits the results by model. The documents are synthetic, so these figures are an upper bound for real invoices.
 
 ## Configuration
 
@@ -120,7 +137,7 @@ What each layer covers: [docs/testing.md](docs/testing.md).
 
 ## Known limits
 
-- **No evaluation.** The brief asks for an evaluation of extraction accuracy. It was not done: there was no labelled real-world dataset available in the time, and generated samples would only measure the generator. `make eval` is a placeholder and prints that. Extraction quality is therefore checked by tests with fake models and by manual runs, not measured.
+- **The evaluation is small and synthetic.** It ran on 33 generated documents with known true values (see [Evaluation](#evaluation)), not on real invoices, so it shows that the pipeline works and where it is weak, not how accurate it is in the real world. Damaged scans can produce wrong values that validation does not catch.
 - **No user accounts.** One shared API key; the editor name on a correction is typed in, not authenticated.
 - **Model quota.** On a free-tier key the stronger model may be unavailable (quota or demand); a flash model is used for both extraction and fallback by default.
 - **Previews.** TIFF and spreadsheets are offered as a download, not a preview. OCR shows no per-page percentage because the API does not report it.
