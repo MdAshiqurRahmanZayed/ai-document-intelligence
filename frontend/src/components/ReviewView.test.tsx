@@ -56,6 +56,73 @@ describe("ReviewView", () => {
     expect((await screen.findAllByText(/2 queued/)).length).toBeGreaterThan(0);
   });
 
+  describe("retrying selected failed documents", () => {
+    const failedList = [
+      listItem({ id: "f1", filename: "broken.pdf", status: "FAILED", error_code: "pdf_corrupt" }),
+      listItem({ id: "f2", filename: "no-model.pdf", status: "FAILED", error_code: "extraction_failed" }),
+      listItem({ id: "f3", filename: "other.pdf", status: "FAILED", error_code: "ocr_failed" }),
+    ];
+    const withThree = () =>
+      routes({
+        "status=FAILED": { items: failedList, next_cursor: null },
+        "/documents/f1/reprocess": { document_id: "f1", status: "QUEUED", from_stage: "ingest" },
+        "/documents/f2/reprocess": { document_id: "f2", status: "QUEUED", from_stage: "extract" },
+      });
+
+    it("keeps Retry selected disabled until a row is ticked", async () => {
+      stubApi(withThree());
+      renderWithClient(<ReviewView />);
+
+      const button = await screen.findByRole("button", { name: "Retry selected" });
+      expect(button).toBeDisabled();
+      await userEvent.click(screen.getByRole("checkbox", { name: "Select broken.pdf" }));
+      expect(screen.getByRole("button", { name: "Retry selected (1)" })).toBeEnabled();
+    });
+
+    it("retries only the ticked documents, each from the step that failed", async () => {
+      const { calls } = stubApi(withThree());
+      renderWithClient(<ReviewView />);
+
+      await userEvent.click(await screen.findByRole("checkbox", { name: "Select broken.pdf" }));
+      await userEvent.click(screen.getByRole("checkbox", { name: "Select no-model.pdf" }));
+      await userEvent.click(screen.getByRole("button", { name: "Retry selected (2)" }));
+
+      await waitFor(() => expect(calls.filter((c) => c.method === "POST")).toHaveLength(2));
+      const posts = calls.filter((c) => c.method === "POST");
+      expect(posts.find((c) => c.url.includes("/documents/f1/reprocess"))?.body).toEqual({ from_stage: "ingest" });
+      expect(posts.find((c) => c.url.includes("/documents/f2/reprocess"))?.body).toEqual({ from_stage: "extract" });
+      expect(posts.some((c) => c.url.includes("/documents/f3/reprocess"))).toBe(false);
+      expect((await screen.findAllByText(/2 queued/)).length).toBeGreaterThan(0);
+    });
+
+    it("selects and clears every row with the header box", async () => {
+      stubApi(withThree());
+      renderWithClient(<ReviewView />);
+
+      await userEvent.click(await screen.findByRole("checkbox", { name: "Select all failed documents" }));
+      expect(screen.getByRole("button", { name: "Retry selected (3)" })).toBeEnabled();
+      await userEvent.click(screen.getByRole("checkbox", { name: "Select all failed documents" }));
+      expect(screen.getByRole("button", { name: "Retry selected" })).toBeDisabled();
+    });
+
+    it("reports the ones the server refused", async () => {
+      stubApi(
+        routes({
+          "status=FAILED": { items: failedList, next_cursor: null },
+          "/documents/f1/reprocess": { document_id: "f1", status: "QUEUED", from_stage: "ingest" },
+          "/documents/f3/reprocess": { status: 409, body: { detail: { reason: "already_queued" } } },
+        }),
+      );
+      renderWithClient(<ReviewView />);
+
+      await userEvent.click(await screen.findByRole("checkbox", { name: "Select broken.pdf" }));
+      await userEvent.click(screen.getByRole("checkbox", { name: "Select other.pdf" }));
+      await userEvent.click(screen.getByRole("button", { name: "Retry selected (2)" }));
+
+      expect((await screen.findAllByText(/1 queued, 1 could not be queued/)).length).toBeGreaterThan(0);
+    });
+  });
+
   it("reports documents that could not be queued", async () => {
     stubApi(routes({ "/jobs/retry-failed": { queued: ["f1"], not_queued: 2 } }));
     renderWithClient(<ReviewView />);
