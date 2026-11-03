@@ -240,7 +240,7 @@ curl localhost:8000/api/v1/documents/3f2a…/result
       },
       "field_confidence": { "invoice_number": 0.95, "total": 0.9 },
       "grounding": { "invoice_number": "Invoice No: INV-1042" },
-      "model": "gemini-2.5-flash",
+      "model": "gemini-3.5-flash",
       "prompt_version": "v1",
       "validation_errors": [
         { "code": "total_mismatch", "field": "total", "severity": "error",
