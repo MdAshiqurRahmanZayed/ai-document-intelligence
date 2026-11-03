@@ -1,9 +1,18 @@
 """Stand-ins for the model, shared by the extraction tests."""
 
 from collections.abc import Sequence
+from datetime import date
 
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.db.models import Document, Page
 from app.llm.extract import ExtractedInvoice
 from app.schemas.invoice import FieldNote, InvoiceDraft
+from app.services.extraction import run_extraction
+from tests.helpers import make_document
+
+TODAY = date(2026, 6, 1)
+THRESHOLD = 0.5
 
 TEXT = (
     "Invoice INV-1\nAcme Ltd\nBill to Globex\nDate 5 January 2026\n"
@@ -39,3 +48,22 @@ class FakeExtractor:
 
     def extract(self, pages: Sequence[tuple[int, str]]) -> list[ExtractedInvoice]:
         return self.items
+
+
+async def stored_document(session: AsyncSession, text: str = TEXT) -> Document:
+    """A document whose text is ready: the state in which extraction starts."""
+    document = make_document()
+    session.add(document)
+    await session.commit()
+    session.add(Page(document_id=document.id, page_no=1, text=text, method="native"))
+    await session.commit()
+    return document
+
+
+async def extracted_document(
+    session: AsyncSession, drafts: Sequence[InvoiceDraft], text: str = TEXT
+) -> Document:
+    """A document that went through extraction and validation with a fake model."""
+    document = await stored_document(session, text)
+    await run_extraction(session, document, FakeExtractor(drafts, text), TODAY, THRESHOLD)
+    return document

@@ -22,7 +22,7 @@ flowchart LR
 
 ## Entities that exist now
 
-Migration `0001` (documents, pages, processing events) and `0002` (extractions, validation errors, cross-checks).
+Migrations `0001` (documents, pages, processing events), `0002` (extractions, validation errors, cross-checks) and `0003` (corrections, chunks).
 
 ```mermaid
 erDiagram
@@ -32,6 +32,9 @@ erDiagram
     extractions ||--o{ validation_errors : "has findings"
     documents ||--o{ validation_errors : "has document-level findings"
     documents ||--o{ cross_checks : "compared (left and right)"
+    documents ||--o{ corrections : "audit trail"
+    extractions ||--o{ corrections : "version holding the new value"
+    documents ||--o{ chunks : "searchable text"
 
     documents {
         uuid id PK
@@ -113,6 +116,28 @@ erDiagram
         jsonb diffs "list of field, left, right"
         timestamptz created_at
     }
+
+    corrections {
+        bigint id PK
+        uuid document_id FK "cascade delete"
+        uuid extraction_id FK "the new version, cascade delete"
+        varchar field "e.g. total, line_items"
+        text old_value "nullable; JSON for line_items"
+        text new_value "nullable; JSON for line_items"
+        varchar edited_by "free text, default api"
+        timestamptz created_at
+    }
+
+    chunks {
+        bigint id PK
+        uuid document_id FK "cascade delete"
+        integer page_no
+        integer chunk_no "position within the page, from 0"
+        text text "about 1000 characters, 150 overlap"
+        tsvector tsv "generated from text, GIN index"
+        vector embedding "768 dimensions, nullable, HNSW index"
+        timestamptz created_at
+    }
 ```
 
 Constraints and indexes:
@@ -124,6 +149,8 @@ Constraints and indexes:
 | `processing_events` | primary key `id`; foreign key `document_id` with cascade delete; index `(document_id, created_at)` |
 | `extractions` | primary key `id`; foreign key `document_id` with cascade delete; unique `(document_id, invoice_index, version)`; index `(supplier_norm, invoice_number)` (duplicate lookup); index `(document_id, is_current)` |
 | `validation_errors` | primary key `id`; foreign keys `document_id` and `extraction_id` with cascade delete, `related_document_id` set null on delete |
+| `corrections` | primary key `id`; foreign keys `document_id` and `extraction_id` with cascade delete; index `(document_id, created_at)` |
+| `chunks` | primary key `id`; foreign key `document_id` with cascade delete; unique `(document_id, page_no, chunk_no)`; index `document_id`; GIN index on `tsv`; HNSW index on `embedding` with `vector_cosine_ops` |
 | `cross_checks` | primary key `id`; foreign keys `left_document_id` and `right_document_id` with cascade delete, `left_extraction_id` and `right_extraction_id` set null on delete; index `(left_document_id, right_document_id)` |
 
 Rules worth knowing:
@@ -140,15 +167,9 @@ Rules worth knowing:
 - An invoice's position in the document (`invoice_index`) identifies it across versions. A document with several invoices has several rows per version; a document with none has no rows and a document-level `no_invoice_found` finding.
 - `data` holds the normalized invoice including its line items (description, quantity, unit price, amount) with amounts as strings. There is no `line_items` table: nothing queries lines yet. The scalar columns (`invoice_number`, `supplier_norm`, `invoice_date`, `total`, `currency`) are copies of `data` for indexed lookups; `total` is `numeric`, never float.
 - `validation_errors` rows of an invoice are replaced when it is validated again. `validation_errors.extraction_id` is null for findings about the whole document.
+- A correction never edits a row: it inserts a new `extractions` version of that invoice (`model` and `prompt_version` are `manual`) and one `corrections` row per changed field. The old version stays as history.
+- `chunks` are derived data: they are deleted and rebuilt whenever a document's text is ready again. `tsv` is a generated column (`to_tsvector('simple', text)`: no stemming, so words match as written in any language). `embedding` is NULL until the embedding job has run, or forever when no Google API key is configured; semantic search ignores such chunks, keyword search does not need embeddings.
+- The embedding size (768) is part of the table layout: `app.db.types.EMBEDDING_DIM` and the migration must agree, and changing it needs a new migration and re-embedding.
 - `cross_checks` rows of a pair of documents are replaced when the pair is compared again. A row with one extraction id null is an invoice with no match on that side.
 
-## Planned entities
-
-Not created yet. Columns are indicative and will be fixed by the change that adds them.
-
-| Planned table | Phase | Purpose |
-|---|---|---|
-| `corrections` | 4 | manual edits with who and when; a correction writes a new `extractions` version |
-| `chunks` | 4 | text pieces for keyword and semantic search; the `embedding vector(N)` size must match the embedding model chosen then |
-
-Dropped from the original sketch: `documents.parent_id` (a document holding several invoices keeps one row per invoice in `extractions` instead of child documents) and `line_items` (line items live in `extractions.data`).
+Nothing planned remains in the schema: later phases only add columns or indexes if measurements call for them (for example a trigram index on supplier names).

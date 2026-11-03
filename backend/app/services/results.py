@@ -3,7 +3,7 @@ import uuid
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models import Extraction, ValidationIssue
+from app.db.models import Correction, Extraction, ValidationIssue
 
 
 async def load_results(
@@ -21,3 +21,27 @@ async def load_results(
         .order_by(ValidationIssue.id)
     )
     return list(extractions), list(issues)
+
+
+async def load_invoice_issues(
+    session: AsyncSession, extraction_id: uuid.UUID
+) -> list[ValidationIssue]:
+    issues = await session.scalars(
+        select(ValidationIssue)
+        .where(ValidationIssue.extraction_id == extraction_id)
+        .order_by(ValidationIssue.id)
+    )
+    return list(issues)
+
+
+async def load_corrections(
+    session: AsyncSession, document_id: uuid.UUID
+) -> list[tuple[Correction, int]]:
+    """The audit trail of a document, newest first, with the invoice each change belongs to."""
+    rows = await session.execute(
+        select(Correction, Extraction.invoice_index)
+        .join(Extraction, Extraction.id == Correction.extraction_id)
+        .where(Correction.document_id == document_id)
+        .order_by(Correction.created_at.desc(), Correction.id.desc())
+    )
+    return [(correction, invoice_index) for correction, invoice_index in rows]

@@ -5,7 +5,9 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+    # env_ignore_empty: a line like "GOOGLE_API_KEY=" (as in .env.example) means "not set", not a
+    # secret that is the empty string.
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore", env_ignore_empty=True)
 
     # attribute = Field(validation_alias="ENV_VARIABLE_IT_IS_READ_FROM")
     app_env: str = Field(default="local", validation_alias="APP_ENV")
@@ -28,6 +30,13 @@ class Settings(BaseSettings):
     s3_region: str = Field(default="us-east-1", validation_alias="S3_REGION")
 
     google_api_key: SecretStr | None = Field(default=None, validation_alias="GOOGLE_API_KEY")
+    # Shared secret for /api/v1. When unset the API is open (local development).
+    api_key: SecretStr | None = Field(default=None, validation_alias="API_KEY")
+    # A placeholder to verify against the provider's list. The vector size is fixed in code
+    # (app.llm.embeddings.EMBEDDING_DIM) because the database column has that size.
+    embedding_model: str = Field(
+        default="models/gemini-embedding-001", validation_alias="EMBEDDING_MODEL"
+    )
     # Extraction runs only when a key is set. The model IDs are placeholders to verify against
     # the provider's current list; changing them needs no code change.
     gemini_extraction_model: str = Field(

@@ -5,13 +5,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import CrossCheck, Document, Extraction
 from app.schemas.invoice import InvoiceData
+from app.services.errors import DocumentNotFound
 from app.validation.crosscheck import Candidate, Pair, match
-
-
-class DocumentNotFound(Exception):
-    def __init__(self, document_id: uuid.UUID) -> None:
-        super().__init__(str(document_id))
-        self.document_id = document_id
 
 
 class NotExtracted(Exception):

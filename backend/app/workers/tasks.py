@@ -11,12 +11,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import get_settings
 from app.db.models import Document, DocumentStatus, ProcessingEvent
 from app.db.session import worker_session
+from app.llm.embeddings import build_embedder
 from app.llm.extract import build_extractor
 from app.pipeline.image import ImageError
 from app.pipeline.pdf import PdfError
 from app.pipeline.spreadsheet import SpreadsheetError
 from app.services.extraction import run_extraction
 from app.services.image_ingest import ingest_image
+from app.services.indexing import embed_missing_chunks, index_chunks
 from app.services.ocr_ingest import has_scanned_pages, ocr_pages
 from app.services.pdf_ingest import ingest_pdf
 from app.services.spreadsheet_ingest import ingest_spreadsheet
@@ -28,6 +30,7 @@ log = structlog.get_logger()
 STAGE = "ingest"
 OCR_STAGE = "ocr"
 EXTRACT_STAGE = "extract"
+EMBED_STAGE = "embed"
 
 _UNUSABLE_MESSAGES = {
     "pdf_corrupt": "The PDF is damaged and could not be read.",
@@ -123,8 +126,21 @@ def extract_document(self: Task, document_id: str) -> None:
     asyncio.run(_run_extract(uuid.UUID(document_id), attempt=self.request.retries + 1))
 
 
+# The embedding job only adds search data. When it fails, the failed events it records are the
+# whole story: the document keeps its status and stays searchable by keyword. So no on_failure.
+@celery_app.task(
+    bind=True, name="app.workers.embed_document", queue="embed", rate_limit="60/m", **_RETRY
+)
+def embed_document(self: Task, document_id: str) -> None:
+    asyncio.run(_run_embed(uuid.UUID(document_id), attempt=self.request.retries + 1))
+
+
 def _extraction_enabled() -> bool:
     # Without a key there is no model to call: documents complete with their text only.
+    return get_settings().google_api_key is not None
+
+
+def _embeddings_enabled() -> bool:
     return get_settings().google_api_key is not None
 
 
@@ -148,6 +164,10 @@ async def _run(document_id: uuid.UUID, attempt: int) -> None:
 
         try:
             ocr_pending = await run_pipeline(session, build_s3_storage(get_settings()), document)
+            if not ocr_pending:
+                # The text is ready: make it searchable in the same transaction that completes
+                # the document. With OCR pending this happens after OCR instead.
+                await index_chunks(session, document_id)
         except (PdfError, ImageError, SpreadsheetError) as exc:
             # The file itself is unusable, so retrying cannot help: fail now and do not re-raise
             # (re-raising would hand it to Celery's retry policy).
@@ -173,10 +193,12 @@ async def _run(document_id: uuid.UUID, attempt: int) -> None:
             document.status = DocumentStatus.COMPLETED
         session.add(_event(document_id, "succeeded", attempt, started))
         await session.commit()
+        # After the commit, so the next job always finds the saved pages. If queueing fails
+        # the exception retries this whole (idempotent) job.
         if next_job is not None:
-            # After the commit, so the next job always finds the saved pages. If queueing fails
-            # the exception retries this whole (idempotent) job.
             next_job.delay(str(document_id))
+        if not ocr_pending and _embeddings_enabled():
+            embed_document.delay(str(document_id))
 
 
 async def _run_ocr(document_id: uuid.UUID, attempt: int) -> None:
@@ -192,6 +214,7 @@ async def _run_ocr(document_id: uuid.UUID, attempt: int) -> None:
         try:
             settings = get_settings()
             await ocr_pages(session, build_s3_storage(settings), document, settings.ocr_concurrency)
+            await index_chunks(session, document_id)  # the text is ready now
         except Exception as exc:
             log.exception("ocr_attempt_failed", document_id=str(document_id), attempt=attempt)
             session.add(
@@ -215,6 +238,8 @@ async def _run_ocr(document_id: uuid.UUID, attempt: int) -> None:
         await session.commit()
         if extract_next:
             extract_document.delay(str(document_id))
+        if _embeddings_enabled():
+            embed_document.delay(str(document_id))
 
 
 async def _run_extract(document_id: uuid.UUID, attempt: int) -> None:
@@ -224,6 +249,9 @@ async def _run_extract(document_id: uuid.UUID, attempt: int) -> None:
             return
 
         started = time.perf_counter()
+        # Ingest sets PROCESSING for the normal path; a document sent straight to extraction
+        # (a reprocess) would otherwise stay QUEUED while the model works.
+        document.status = DocumentStatus.PROCESSING
         session.add(_event(document_id, "started", attempt, stage=EXTRACT_STAGE))
         await session.commit()
 
@@ -255,6 +283,39 @@ async def _run_extract(document_id: uuid.UUID, attempt: int) -> None:
             raise
 
         session.add(_event(document_id, "succeeded", attempt, started, stage=EXTRACT_STAGE))
+        await session.commit()
+
+
+async def _run_embed(document_id: uuid.UUID, attempt: int) -> None:
+    async with worker_session() as session:
+        document = await session.get(Document, document_id)
+        if document is None:
+            return
+
+        started = time.perf_counter()
+        session.add(_event(document_id, "started", attempt, stage=EMBED_STAGE))
+        await session.commit()
+
+        try:
+            await embed_missing_chunks(session, document_id, build_embedder(get_settings()))
+        except Exception as exc:
+            log.exception("embed_attempt_failed", document_id=str(document_id), attempt=attempt)
+            await session.rollback()  # a failed database call leaves the session unusable
+            session.add(
+                _event(
+                    document_id,
+                    "failed",
+                    attempt,
+                    started,
+                    "embedding_failed",
+                    type(exc).__name__,
+                    stage=EMBED_STAGE,
+                )
+            )
+            await session.commit()
+            raise
+
+        session.add(_event(document_id, "succeeded", attempt, started, stage=EMBED_STAGE))
         await session.commit()
 
 

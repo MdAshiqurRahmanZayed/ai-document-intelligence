@@ -6,12 +6,28 @@ Keep this file in sync with the code whenever an endpoint, field or error reason
 
 ## Contents
 
+- [Authentication](#authentication)
 - [Health](#health)
 - [Upload documents](#upload-documents)
+- [List documents](#list-documents)
+- [Search](#search)
 - [Get a document](#get-a-document)
+- [Download link for the original file](#download-link-for-the-original-file)
 - [Get the extraction result](#get-the-extraction-result)
+- [Correct an invoice](#correct-an-invoice)
+- [Reprocess documents](#reprocess-documents)
 - [Cross-verify two documents](#cross-verify-two-documents)
 - [Reference: statuses, reasons, limits](#reference)
+
+## Authentication
+
+When the `API_KEY` setting is configured, every request under `/api/v1` must carry the header `X-API-Key` with that value:
+
+```bash
+curl -H 'X-API-Key: your-key' localhost:8000/api/v1/documents
+```
+
+A missing or wrong key gets `401` with `{"detail": "Invalid or missing API key"}` and nothing is read or changed. `/healthz`, `/readyz` and `/docs` stay open, and browser preflight (`OPTIONS`) requests are answered without the key. When `API_KEY` is not set the API is open and logs a warning at startup (fine for local work). It is one shared key: there are no user accounts.
 
 ## Health
 
@@ -56,6 +72,91 @@ Notes:
 - A changed file has a different hash, so it is accepted as a new document.
 - Uploading the same bytes again retries a document that is `FAILED`: it goes back to `QUEUED`, one new job is queued, and the result is `accepted` with the existing `document_id`. If the queue is still unavailable the result is `rejected` (`queue_unavailable`) and the document stays `FAILED`.
 
+## List documents
+
+`GET /api/v1/documents`: documents newest first, in pages.
+
+```bash
+curl 'localhost:8000/api/v1/documents?status=NEEDS_REVIEW&supplier=acme&limit=20'
+```
+
+```json
+{
+  "items": [
+    {
+      "id": "3f2a…", "filename": "invoice.pdf", "status": "NEEDS_REVIEW",
+      "source_type": "pdf", "page_count": 2, "error_code": null,
+      "created_at": "…", "updated_at": "…",
+      "invoices": [
+        { "invoice_index": 0, "invoice_number": "INV-1042", "supplier_name": "Acme Ltd",
+          "invoice_date": "2026-01-05", "total": "130.0000", "currency": "EUR" }
+      ]
+    }
+  ],
+  "next_cursor": "eyJ…"
+}
+```
+
+- `limit` 1 to 100 (default 20). `next_cursor` is `null` on the last page; otherwise pass it as `cursor` to get the next page. Pages do not shift when new documents arrive.
+- `invoices` summarises the current version of each invoice (empty for a document with no extraction).
+- **Filters** (all optional, combined with AND):
+
+| Parameter | Matches |
+|---|---|
+| `status` | the document status |
+| `supplier` | part of the supplier name, ignoring case, punctuation and company forms (`acme` finds "Acme Industries Ltd.") |
+| `invoice_number` | the invoice number, ignoring case, spaces and punctuation (`inv 007` finds `INV-007`) |
+| `date_from`, `date_to` | invoice date, inclusive (`YYYY-MM-DD`) |
+| `amount_min`, `amount_max` | invoice total, inclusive |
+| `currency` | ISO 4217 code, ignoring case |
+
+A document matches when it has the given status and **one** current invoice that satisfies all the invoice filters (supplier, number, dates, amounts, currency) together.
+
+`422` for an unknown `status`, a `limit` outside 1 to 100, a malformed `cursor`, or an unreadable date or amount.
+
+## Search
+
+`GET /api/v1/search?q=…`: find documents by what their text says.
+
+```bash
+curl 'localhost:8000/api/v1/search?q=payment+terms&mode=hybrid&status=COMPLETED&limit=10'
+```
+
+```json
+{
+  "mode_used": "hybrid",
+  "results": [
+    {
+      "document_id": "3f2a…", "filename": "invoice.pdf", "status": "COMPLETED",
+      "page_no": 2, "score": 0.0325,
+      "snippet": "… <mark>Payment</mark> is due within thirty days …",
+      "invoices": [ { "invoice_index": 0, "invoice_number": "INV-1042", "supplier_name": "Acme Ltd",
+                      "invoice_date": "2026-01-05", "total": "120.0000", "currency": "EUR" } ]
+    }
+  ]
+}
+```
+
+| Parameter | Meaning |
+|---|---|
+| `q` | The query (required, not blank, up to 500 characters) |
+| `mode` | `keyword`, `semantic` or `hybrid` (default) |
+| `limit` | 1 to 50 results (default 10) |
+| filters | the same as the [list](#list-documents): `status`, `supplier`, `invoice_number`, `date_from`, `date_to`, `amount_min`, `amount_max`, `currency` |
+
+**Modes**
+- `keyword`: PostgreSQL full-text search. Every word must appear (any order); `"quoted phrases"` and `-excluded` words work. Words match as written (no stemming), in any language. Ranked by `ts_rank_cd`. Needs no key.
+- `semantic`: the query is turned into an embedding and compared by cosine similarity with the embeddings of the text chunks, so a question can find a passage that shares none of its words. Only chunks that have been embedded count (embedding happens in the background after a document is processed). Needs a Google API key.
+- `hybrid`: runs both and merges the two rankings with reciprocal rank fusion (a chunk scores the sum of `1 / (60 + rank)` over the rankings it is in, so one found by both beats one found by either). Without a Google API key it runs as `keyword` and says so in `mode_used`.
+
+Each result is the **best chunk of one document**: `page_no` is its page and `snippet` the text around the match. The `snippet` is HTML-safe: HTML tags in the document are left out by the database, every other character that came from the document is escaped, and the only markup is the `<mark>` tags around matched words (keyword and hybrid matches), so it can be shown as HTML directly. `score` is comparable only within one response.
+
+| Response | When |
+|---|---|
+| `200` with `"results": []` | Nothing matches |
+| `409` | `{"detail": {"reason": "semantic_unavailable"}}`: `mode=semantic` without a Google API key |
+| `422` | Missing or blank `q`, unknown `mode`, `limit` outside 1 to 50, or an invalid filter |
+
 ## Get a document
 
 `GET /api/v1/documents/{document_id}`
@@ -88,12 +189,22 @@ curl localhost:8000/api/v1/documents/3f2a…
 }
 ```
 
-`events` is the processing history, oldest first. `stage` is `ingest` (reading the file and saving its pages) `ocr` (reading the text of scanned pages and images; only present when a document has such pages) or `extract` (reading the invoices and validating them; only present when extraction is enabled). A failed attempt adds a `failed` event; its retry then adds a `started` event with the next `attempt` number.
+`events` is the processing history, oldest first. `stage` is `ingest` (reading the file and saving its pages) `ocr` (reading the text of scanned pages and images; only present when a document has such pages) `extract` (reading the invoices and validating them; only present when extraction is enabled) or `embed` (adding search embeddings; only present when a Google API key is set; a failure here never changes the document status). A failed attempt adds a `failed` event; its retry then adds a `started` event with the next `attempt` number.
 
 | Response | When |
 |---|---|
 | `404` | No document with that id |
 | `422` | `document_id` is not a valid UUID |
+
+## Download link for the original file
+
+`GET /api/v1/documents/{document_id}/file` returns a short-lived link to the stored original, for a viewer or a download.
+
+```json
+{ "url": "http://…/raw/3f2a…/original.pdf?X-Amz-…", "expires_in": 300 }
+```
+
+The link stops working after `expires_in` seconds (300); request a new one when needed. `404` for an unknown document.
 
 ## Get the extraction result
 
@@ -152,6 +263,74 @@ curl localhost:8000/api/v1/documents/3f2a…/result
 | `404` | No document with that id |
 | `422` | `document_id` is not a valid UUID |
 
+## Correct an invoice
+
+`PATCH /api/v1/documents/{document_id}/invoices/{invoice_index}`: fix values the system extracted. `invoice_index` is the position in `/result` (from 0).
+
+```bash
+curl -X PATCH localhost:8000/api/v1/documents/3f2a…/invoices/0 \
+  -H 'Content-Type: application/json' \
+  -d '{"fields": {"total": "120.00", "currency": "EUR"}, "edited_by": "Maria"}'
+```
+
+- `fields` may hold `invoice_number`, `invoice_date`, `supplier_name`, `customer_name`, `subtotal`, `tax`, `total`, `currency` and `line_items` (a list of `{description, quantity, unit_price, amount}`; the whole list is replaced). `null` clears a field. Values may be text or numbers and are read exactly like extracted ones: `"5 January 2026"` becomes `2026-01-05`, `"1.234,50"` becomes 1234.50, `"€"` becomes `EUR`.
+- `edited_by` is free text for the audit trail (default `api`).
+- The edit is saved as a **new version** of that invoice (`model` and `prompt_version` are `manual`); older versions are kept. Fields you set get confidence 1 and no source quote.
+- The invoice is **validated again** (same rules, duplicate check included). The document becomes `COMPLETED` when no current finding is an error or low-confidence warning, otherwise `NEEDS_REVIEW`. Findings of the old version that described the replaced value (for example `ungrounded_field`) are gone.
+- Sending only values that equal the current ones changes nothing: `200`, no new version, no audit record.
+
+**`200`** returns the invoice in the same shape as one entry of `/result` (`invoices[]`).
+
+| Response | When |
+|---|---|
+| `404` | The document or the invoice number does not exist |
+| `409` | The document is `UPLOADED`, `QUEUED` or `PROCESSING`. Body: `{"detail": {"reason": "document_busy"}}` |
+| `422` | Unknown field, or a value that cannot be read. Body: `{"detail": {"field": "total", "message": "…"}}`; nothing is saved |
+
+`GET /api/v1/documents/{document_id}/corrections` returns the audit trail, newest first:
+
+```json
+{ "corrections": [
+  { "invoice_index": 0, "field": "total", "old_value": "130.00", "new_value": "120.00",
+    "edited_by": "Maria", "created_at": "…" }
+] }
+```
+
+One entry per field whose value changed (`line_items` values are JSON text). `404` for an unknown document.
+
+## Reprocess documents
+
+`POST /api/v1/documents/{document_id}/reprocess` runs a document through the pipeline again. Optional JSON body: `{"from_stage": "ingest"}` (default) or `{"from_stage": "extract"}`.
+
+- `ingest` runs everything again (read the file, OCR, extract, validate).
+- `extract` runs only extraction and validation on the text already stored. It needs extraction to be enabled (a Google API key) and at least one page with text.
+
+```bash
+curl -X POST localhost:8000/api/v1/documents/3f2a…/reprocess -H 'Content-Type: application/json' \
+  -d '{"from_stage": "extract"}'
+```
+
+**`202`** `{"document_id": "3f2a…", "status": "QUEUED", "from_stage": "extract"}`. The document is `QUEUED` with its error cleared; follow it with `GET /documents/{id}`.
+
+Processing history, earlier invoice versions and the corrections audit trail are kept. Re-extracting makes the **model's values the current version again**, so manual corrections stop being current (they stay in older versions and in `/corrections`).
+
+| Response | When |
+|---|---|
+| `404` | No document with that id |
+| `409` | `{"reason": "already_queued"}`: the document is `UPLOADED`, `QUEUED` or `PROCESSING` (only `FAILED`, `NEEDS_REVIEW` and `COMPLETED` documents can be reprocessed). `{"reason": "extraction_disabled"}` or `{"reason": "no_text"}` for `from_stage` `extract` |
+| `422` | Unknown `from_stage`, or `document_id` is not a valid UUID |
+| `503` | `{"reason": "queue_unavailable"}`: the queue refused the job. The document is now `FAILED` with that error code, so it can be retried |
+
+Repeating the call is safe: when several requests for the same document arrive together exactly one queues the job and the others get `409`.
+
+`POST /api/v1/jobs/retry-failed?limit=100` queues every `FAILED` document again, oldest first (`limit` 1 to 1000, default 100), each from the stage that failed: extraction for `extraction_failed`, the start for every other error code.
+
+```json
+{ "queued": ["3f2a…", "8d4e…"], "not_queued": 0 }
+```
+
+`not_queued` counts failed documents that could not be queued (the queue was down, or another request claimed them first). With nothing failed the response is `200` with an empty list.
+
 ## Cross-verify two documents
 
 `POST /api/v1/cross-verify`: compare the invoices of two documents, for example a PDF against an Excel export, or two PDFs. Both documents must have been extracted.
@@ -195,7 +374,7 @@ curl -X POST localhost:8000/api/v1/cross-verify -H 'Content-Type: application/js
 | Status | Meaning |
 |---|---|
 | `UPLOADED` | Stored and recorded, not yet handed to the queue (brief) |
-| `QUEUED` | Waiting for a worker |
+| `QUEUED` | Waiting for a worker (after an upload, or after a reprocess) |
 | `PROCESSING` | A worker is running a job. Stays `PROCESSING` between the ingest, OCR and extraction jobs |
 | `COMPLETED` | All jobs finished and validation found nothing that needs a person (after the OCR job for scanned pages, after the extraction job when extraction is enabled) |
 | `NEEDS_REVIEW` | Extraction finished but a person should look: a validation error, a low-confidence field, a duplicate invoice, or no invoice found. See the findings in `/result` |

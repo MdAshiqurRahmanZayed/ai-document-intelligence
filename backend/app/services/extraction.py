@@ -5,6 +5,7 @@ import uuid
 from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import date
+from typing import Any
 
 from sqlalchemy import delete, func, or_, select, true, update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -28,6 +29,17 @@ class ExtractedRecord:
     findings: list[Finding]
 
 
+def lookup_columns(data: InvoiceData) -> dict[str, Any]:
+    """The copies of key fields kept as columns on `extractions` for indexed lookups."""
+    return {
+        "invoice_number": data.invoice_number,
+        "supplier_norm": normalize_name(data.supplier_name),
+        "invoice_date": data.invoice_date,
+        "total": data.total,
+        "currency": data.currency,
+    }
+
+
 def _to_record(
     document_id: uuid.UUID, index: int, version: int, item: ExtractedInvoice
 ) -> ExtractedRecord:
@@ -49,11 +61,7 @@ def _to_record(
         grounding={note.field: note.quote for note in notes if note.quote},
         model=item.model,
         prompt_version=PROMPT_VERSION,
-        invoice_number=data.invoice_number,
-        supplier_norm=normalize_name(data.supplier_name),
-        invoice_date=data.invoice_date,
-        total=data.total,
-        currency=data.currency,
+        **lookup_columns(data),
     )
     return ExtractedRecord(
         extraction=extraction,
@@ -158,6 +166,48 @@ def _issue(document_id: uuid.UUID, extraction_id: uuid.UUID | None, f: Finding) 
     )
 
 
+async def validate_invoice_findings(
+    session: AsyncSession,
+    document_id: uuid.UUID,
+    record: ExtractedRecord,
+    today: date,
+    threshold: float,
+) -> None:
+    """Replace the findings of one invoice: rules, warnings from reading it, and duplicates.
+
+    Findings of the document's other invoices are left alone.
+    """
+    await session.execute(
+        delete(ValidationIssue).where(ValidationIssue.extraction_id == record.extraction.id)
+    )
+    findings = [
+        *record.findings,
+        *validate_invoice(record.data, record.confidence, today, threshold),
+        *await _duplicate_findings(session, document_id, record.extraction),
+    ]
+    session.add_all(_issue(document_id, record.extraction.id, f) for f in findings)
+
+
+async def document_status(session: AsyncSession, document_id: uuid.UUID) -> str:
+    """`NEEDS_REVIEW` or `COMPLETED`, from every current finding of the document."""
+    await session.flush()  # findings added in this transaction must be visible to the queries
+    current = select(Extraction.id).where(
+        Extraction.document_id == document_id, Extraction.is_current
+    )
+    rows = await session.execute(
+        select(ValidationIssue.code, ValidationIssue.severity, ValidationIssue.message).where(
+            ValidationIssue.document_id == document_id,
+            # Findings of earlier versions describe values that are no longer current.
+            or_(
+                ValidationIssue.extraction_id.is_(None), ValidationIssue.extraction_id.in_(current)
+            ),
+        )
+    )
+    findings = [Finding(code, severity, message) for code, severity, message in rows]
+    has_invoices = await session.scalar(select(current.exists())) or False
+    return route(findings, has_invoices=has_invoices)
+
+
 async def validate_document(
     session: AsyncSession,
     document: Document,
@@ -172,23 +222,12 @@ async def validate_document(
             ValidationIssue.document_id == document.id, ValidationIssue.extraction_id.is_(None)
         )
     )
-    everything: list[Finding] = []
     for record in records:
-        await session.execute(
-            delete(ValidationIssue).where(ValidationIssue.extraction_id == record.extraction.id)
-        )
-        findings = [
-            *record.findings,
-            *validate_invoice(record.data, record.confidence, today, threshold),
-            *await _duplicate_findings(session, document.id, record.extraction),
-        ]
-        session.add_all(_issue(document.id, record.extraction.id, f) for f in findings)
-        everything += findings
+        await validate_invoice_findings(session, document.id, record, today, threshold)
     if not records:
         missing = Finding("no_invoice_found", ERROR, "no invoice was found in this document")
         session.add(_issue(document.id, None, missing))
-        everything.append(missing)
-    return route(everything, has_invoices=bool(records))
+    return await document_status(session, document.id)
 
 
 async def run_extraction(

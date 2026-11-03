@@ -1,16 +1,18 @@
 import asyncio
 import uuid
-from collections.abc import Awaitable, Callable, Coroutine
+from collections.abc import AsyncIterator, Awaitable, Callable, Coroutine
+from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from typing import Any
 
 from fastapi import FastAPI
-from httpx import AsyncClient
+from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import NullPool
 
 from app.core.config import Settings
 from app.db.models import Document
+from app.main import create_app
 from tests.fakes import FakeStorage, RecordingEnqueue
 
 
@@ -59,5 +61,18 @@ class Api:
     client: AsyncClient
     storage: FakeStorage
     enqueue: RecordingEnqueue
+    enqueue_extract: RecordingEnqueue
     settings: Settings
     app: FastAPI
+
+
+@asynccontextmanager
+async def running_api(settings: Settings) -> AsyncIterator[Api]:
+    app = create_app(settings)
+    storage, enqueue, enqueue_extract = FakeStorage(), RecordingEnqueue(), RecordingEnqueue()
+    app.state.storage = storage
+    app.state.enqueue = enqueue
+    app.state.enqueue_extract = enqueue_extract
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        yield Api(client, storage, enqueue, enqueue_extract, settings, app)
+    await app.state.engine.dispose()
