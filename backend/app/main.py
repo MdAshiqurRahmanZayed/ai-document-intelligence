@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import create_async_engine
 
 from app.api import health
 from app.api.auth import require_api_key
-from app.api.v1 import cross_verify, documents
+from app.api.v1 import cross_verify, documents, jobs
 from app.core.config import Settings, get_settings
 from app.core.logging import RequestLogMiddleware, configure_logging, log
 from app.db.session import make_session_factory
@@ -22,6 +22,12 @@ def enqueue_ingest(document_id: uuid.UUID) -> None:
     from app.workers.tasks import ingest_document
 
     ingest_document.delay(str(document_id))
+
+
+def enqueue_extract(document_id: uuid.UUID) -> None:
+    from app.workers.tasks import extract_document
+
+    extract_document.delay(str(document_id))
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -41,6 +47,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.storage = build_s3_storage(settings)
     # Replaceable in tests, like app.state.checks.
     app.state.enqueue = enqueue_ingest
+    app.state.enqueue_extract = enqueue_extract
     app.state.checks = build_checks(settings, engine)
     app.add_middleware(
         CORSMiddleware,
@@ -54,6 +61,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     protected = [Depends(require_api_key)]
     app.include_router(documents.router, dependencies=protected)
     app.include_router(cross_verify.router, dependencies=protected)
+    app.include_router(jobs.router, dependencies=protected)
 
     if settings.api_key is None:
         log.warning("auth_disabled", reason="API_KEY is not set, the API is open")

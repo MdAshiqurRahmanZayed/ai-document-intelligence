@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.schemas.corrections import CorrectionRequest, CorrectionsOut, build_corrections
 from app.schemas.documents import DocumentOut, UploadItem, UploadResponse
+from app.schemas.reprocess import ReprocessOut, ReprocessRequest
 from app.schemas.results import InvoiceOut, ResultOut, build_result, invoice_out
 from app.services.corrections import (
     DocumentBusy,
@@ -17,6 +18,12 @@ from app.services.corrections import (
 )
 from app.services.documents import get_document, ingest_upload
 from app.services.errors import DocumentNotFound
+from app.services.reprocess import (
+    AlreadyQueued,
+    CannotReprocess,
+    QueueUnavailable,
+    reprocess_document,
+)
 from app.services.results import load_corrections, load_invoice_issues, load_results
 
 router = APIRouter(prefix="/api/v1/documents", tags=["documents"])
@@ -122,4 +129,34 @@ async def read_corrections(
     if await get_document(session, document_id) is None:
         raise HTTPException(status_code=404, detail="Document not found")
     return build_corrections(await load_corrections(session, document_id))
+
+
+@router.post("/{document_id}/reprocess", status_code=202, response_model=ReprocessOut)
+async def reprocess(
+    document_id: uuid.UUID,
+    request: Request,
+    session: Annotated[AsyncSession, Depends(get_session)],
+    body: ReprocessRequest | None = None,
+) -> ReprocessOut:
+    state = request.app.state
+    try:
+        result = await reprocess_document(
+            session,
+            document_id,
+            (body or ReprocessRequest()).from_stage,
+            extraction_enabled=state.settings.google_api_key is not None,
+            enqueue=state.enqueue,
+            enqueue_extract=state.enqueue_extract,
+        )
+    except DocumentNotFound as exc:
+        raise HTTPException(status_code=404, detail="Document not found") from exc
+    except AlreadyQueued as exc:
+        raise HTTPException(status_code=409, detail={"reason": "already_queued"}) from exc
+    except CannotReprocess as exc:
+        raise HTTPException(status_code=409, detail={"reason": exc.reason}) from exc
+    except QueueUnavailable as exc:
+        raise HTTPException(status_code=503, detail={"reason": "queue_unavailable"}) from exc
+    return ReprocessOut(
+        document_id=result.document_id, status=result.status, from_stage=result.from_stage
+    )
 

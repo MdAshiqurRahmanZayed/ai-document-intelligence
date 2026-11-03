@@ -224,6 +224,9 @@ async def _run_extract(document_id: uuid.UUID, attempt: int) -> None:
             return
 
         started = time.perf_counter()
+        # Ingest sets PROCESSING for the normal path; a document sent straight to extraction
+        # (a reprocess) would otherwise stay QUEUED while the model works.
+        document.status = DocumentStatus.PROCESSING
         session.add(_event(document_id, "started", attempt, stage=EXTRACT_STAGE))
         await session.commit()
 
