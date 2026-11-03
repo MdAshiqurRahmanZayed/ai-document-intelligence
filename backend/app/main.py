@@ -2,11 +2,12 @@ import uuid
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.ext.asyncio import create_async_engine
 
 from app.api import health
+from app.api.auth import require_api_key
 from app.api.v1 import cross_verify, documents
 from app.core.config import Settings, get_settings
 from app.core.logging import RequestLogMiddleware, configure_logging, log
@@ -49,8 +50,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
     app.add_middleware(RequestLogMiddleware)
     app.include_router(health.router)
-    app.include_router(documents.router)
-    app.include_router(cross_verify.router)
+    # Health stays outside /api/v1 and open; every versioned route needs the API key (if set).
+    protected = [Depends(require_api_key)]
+    app.include_router(documents.router, dependencies=protected)
+    app.include_router(cross_verify.router, dependencies=protected)
 
+    if settings.api_key is None:
+        log.warning("auth_disabled", reason="API_KEY is not set, the API is open")
     log.info("startup", settings=settings.model_dump(mode="json"))
     return app
