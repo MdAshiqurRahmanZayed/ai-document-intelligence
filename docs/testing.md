@@ -2,6 +2,26 @@
 
 Backend tests run in Docker with `make test` (unit and integration, real PostgreSQL, Tesseract installed). `make bench` runs the slow large-document benchmarks, which `make test` skips. Tests never call a real LLM. Test files (PDFs, images, spreadsheets) are generated in memory by `tests/pdf_samples.py`, `tests/image_samples.py` and `tests/spreadsheet_samples.py`; no binary fixtures are committed.
 
+## Frontend
+
+`make test` also runs the frontend's Vitest suite (React Testing Library, jsdom; no browser, no running API: `fetch` and `XMLHttpRequest` are stubbed). It covers:
+
+| Area | Covered by (under `frontend/src/`) |
+|---|---|
+| API proxy: key added on the server, errors passed through, 502, blocked paths, large streamed bodies, file streaming with ranges | `lib/proxy.test.ts` |
+| The API key is read only by the two server route handlers and never exposed as a `NEXT_PUBLIC_` value | `lib/keyguard.test.ts` |
+| Error parsing, and a plain-language message for every reason, error code and finding code listed in `docs/api.md` | `lib/api.test.ts` |
+| Upload: file checks, per-file and overall percentages, "sent, waiting", per-file failure, double submit | `lib/upload.test.ts`, `components/UploadForm.test.tsx` |
+| Processing progress (steps, percentage, failed step, retry, never going backwards) | `lib/progress.test.ts` |
+| Document list: filters, load more, empty and error states, polling on and off | `components/DocumentsView.test.tsx`, `lib/filters.test.ts` |
+| Document detail: steps, failure, several invoices, not found, history; viewer per file kind | `components/DocumentDetail.test.tsx`, `components/FileViewer.test.tsx` |
+| Findings marked on fields, correction form (dirty fields only, 422 at the field, 409 busy, clearing a value, line items) | `components/InvoiceCard.test.tsx`, `lib/invoiceForm.test.ts` |
+| Reprocess and retry-all | `components/ReprocessButton.test.tsx`, `components/ReviewView.test.tsx` |
+| Search: modes, fallback notice, semantic unavailable, blank query, filters; safe snippet rendering | `components/SearchView.test.tsx`, `components/Snippet.test.tsx`, `lib/snippet.test.ts` |
+| UI components | `components/ui/ui.test.tsx` |
+
+`make e2e` runs one Playwright journey against the running stack (`e2e/journey.spec.ts`): upload a CSV, see it processed, open it, find it by keyword search. It runs without a Google API key. Correcting a value needs an extracted invoice, which needs the model, so that path is covered by the component tests above and by the manual run with a real key in [frontend.md](frontend.md#manual-test-from-the-browser).
+
 ## Phase 1 coverage: file types and failures
 
 Each row names the tests that cover it (`file::test`, under `backend/tests/`).
