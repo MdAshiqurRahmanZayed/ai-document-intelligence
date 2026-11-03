@@ -30,5 +30,5 @@
 
 ## 6. Finish
 
-- [ ] 6.1 Run `openspec validate --all --strict`, `make check`, and read the README once as a stranger. Verify: all pass and nothing contradicts the code.
-- [ ] 6.2 Commit atomically (`test(web)` for 1.2, `docs(repo)` for README and docs, `docs(openspec)` for the archive), no co-author trailers, branch `docs/repo-submission-docs`; push and open the PR only when the user asks. Verify: `git log --oneline` shows conventional messages.
+- [x] 6.1 Run `openspec validate --all --strict`, `make check`, and read the README once as a stranger. Verify: all pass and nothing contradicts the code.
+- [x] 6.2 Commit atomically (`test(web)` for 1.2, `docs(repo)` for README and docs, `docs(openspec)` for the archive), no co-author trailers, branch `docs/repo-submission-docs`; push and open the PR only when the user asks. Verify: `git log --oneline` shows conventional messages.
