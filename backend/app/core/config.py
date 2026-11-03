@@ -40,10 +40,10 @@ class Settings(BaseSettings):
     # Extraction runs only when a key is set. The model IDs are placeholders to verify against
     # the provider's current list; changing them needs no code change.
     gemini_extraction_model: str = Field(
-        default="gemini-2.5-flash", validation_alias="GEMINI_EXTRACTION_MODEL"
+        default="gemini-3.5-flash", validation_alias="GEMINI_EXTRACTION_MODEL"
     )
     gemini_fallback_model: str = Field(
-        default="gemini-2.5-pro", validation_alias="GEMINI_FALLBACK_MODEL"
+        default="gemini-3.8-flash", validation_alias="GEMINI_FALLBACK_MODEL"
     )
     # Pages of text sent to the model in one call.
     extraction_pages_per_call: int = Field(
