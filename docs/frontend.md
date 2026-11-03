@@ -9,7 +9,7 @@ A Next.js (App Router) + TypeScript + Tailwind v4 interface over the API. Compon
 | `/documents` | Every document, newest first, with status badge, progress bar, invoice summary. Filters (status, supplier, invoice number, dates, amounts, currency) live in the address. "Load more" pages with the API cursor. Refreshes every 2 s only while a document is unfinished. |
 | `/upload` | Drag or browse several files. Each is checked in the browser (type, empty, size), sent one request per file with its own percentage, then shown as accepted, already uploaded or rejected with a link to the document. |
 | `/documents/[id]` | The original (PDF viewer one page at a time, image, or a download for TIFF and spreadsheets) beside the extracted invoice(s). Processing steps, validation findings (marked on their field), correction form, correction history, reprocess. |
-| `/review` | Documents in `NEEDS_REVIEW` with their findings count, and `FAILED` documents with the reason. "Retry all failed" asks first and reports how many were queued. |
+| `/review` | Documents in `NEEDS_REVIEW` with their findings count, and `FAILED` documents with the reason. Tick rows (or the header box) in the Failed table and press "Retry selected" to retry only those, each from the step that failed. "Retry all failed" asks first and reports how many were queued. |
 | `/search` | Keyword, semantic or hybrid search with the same filters. Query, mode and filters are in the address. |
 
 ## How progress is shown
@@ -67,7 +67,7 @@ Start with `make up` and `make migrate`, then open http://localhost:3000. Keep `
 2. **Watch it process** (`/documents`): the new rows show a progress bar and step name; the badge changes to Completed by itself (no reload). Flower shows the `ingest` (and `ocr`) tasks.
 3. **Open a document**: a PDF appears in the viewer with Previous/Next; an image appears as an image; a spreadsheet shows "cannot be previewed" and a download link. The steps list shows each step with its duration. No invoice form appears, because extraction is off ("No invoice was extracted").
 4. **Search** (`/search`): search for a word that is in one of the files with the Keyword mode: the file appears with the word highlighted. Choose Semantic: a message explains it needs a key. Hybrid says it used keyword results.
-5. **Failures**: upload a truncated or renamed file (for example a text file renamed `.pdf`): the API rejects it. For a corrupt but valid-looking PDF the document ends `FAILED`; open `/review` to see why and use **Retry all failed**.
+5. **Failures**: upload a truncated or renamed file (for example a text file renamed `.pdf`): the API rejects it. For a corrupt but valid-looking PDF the document ends `FAILED`; open `/review` to see why, tick the document and press **Retry selected** (or use **Retry all failed**).
 
 **With a Google API key** in `.env` (then `docker compose up -d api worker`):
 

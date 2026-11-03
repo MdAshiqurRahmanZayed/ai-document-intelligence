@@ -17,7 +17,7 @@ import { useDocuments } from "@/hooks/useDocuments";
 import { api } from "@/lib/api";
 import { formatDateTime } from "@/lib/format";
 import { errorCodeMessage, errorMessage } from "@/lib/messages";
-import type { RetryFailedResponse } from "@/lib/types";
+import type { DocumentListItem, FromStage, RetryFailedResponse } from "@/lib/types";
 
 export function ReviewView() {
   return (
@@ -88,9 +88,21 @@ function NeedsReview() {
   );
 }
 
+/** Each document restarts from the step that failed, the same rule "Retry all" uses on the server. */
+const fromStage = (doc: DocumentListItem): FromStage => (doc.error_code === "extraction_failed" ? "extract" : "ingest");
+
 function Failed() {
   const query = useDocuments({ status: "FAILED" });
   const docs = query.data?.pages.flatMap((p) => p.items) ?? [];
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  // Documents that left the list (retried, or no longer failed) drop out of the selection.
+  const chosen = docs.filter((d) => selected.has(d.id));
+  const toggle = (id: string) =>
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (!next.delete(id)) next.add(id);
+      return next;
+    });
 
   return (
     <section aria-labelledby="failed" className="flex flex-col gap-3">
@@ -98,7 +110,12 @@ function Failed() {
         <h2 id="failed" className="text-lg font-semibold">
           Failed {query.data && <span className="text-sm font-normal text-zinc-500">({docs.length}{query.hasNextPage ? "+" : ""})</span>}
         </h2>
-        {docs.length > 0 && <RetryAll />}
+        {docs.length > 0 && (
+          <div className="flex items-center gap-2">
+            <RetrySelected chosen={chosen} onDone={(ids) => setSelected((prev) => new Set([...prev].filter((id) => !ids.includes(id))))} />
+            <RetryAll />
+          </div>
+        )}
       </div>
       {query.isPending ? (
         <div className="flex justify-center py-10 text-zinc-500">
@@ -113,6 +130,17 @@ function Failed() {
           <Table aria-label="Failed documents">
             <THead>
               <TR>
+                <TH className="w-10">
+                  <input
+                    type="checkbox"
+                    aria-label="Select all failed documents"
+                    checked={chosen.length === docs.length}
+                    ref={(el) => {
+                      if (el) el.indeterminate = chosen.length > 0 && chosen.length < docs.length;
+                    }}
+                    onChange={(e) => setSelected(e.target.checked ? new Set(docs.map((d) => d.id)) : new Set())}
+                  />
+                </TH>
                 <TH>Document</TH>
                 <TH>Why it failed</TH>
                 <TH>Uploaded</TH>
@@ -121,6 +149,14 @@ function Failed() {
             <TBody>
               {docs.map((doc) => (
                 <TR key={doc.id}>
+                  <TD>
+                    <input
+                      type="checkbox"
+                      aria-label={`Select ${doc.filename}`}
+                      checked={selected.has(doc.id)}
+                      onChange={() => toggle(doc.id)}
+                    />
+                  </TD>
                   <TD>
                     <Link href={`/documents/${doc.id}`} className="font-medium text-indigo-600 hover:underline">
                       {doc.filename}
@@ -142,6 +178,31 @@ function Failed() {
         </>
       )}
     </section>
+  );
+}
+
+function RetrySelected({ chosen, onDone }: { chosen: DocumentListItem[]; onDone: (queuedIds: string[]) => void }) {
+  const queryClient = useQueryClient();
+  const toast = useToast();
+
+  const retry = useMutation({
+    mutationFn: async () => {
+      const outcomes = await Promise.allSettled(chosen.map((doc) => api.reprocess(doc.id, fromStage(doc))));
+      const queued = chosen.filter((_, i) => outcomes[i].status === "fulfilled").map((d) => d.id);
+      return { queued, notQueued: chosen.length - queued.length };
+    },
+    onSuccess: ({ queued, notQueued }) => {
+      toast(`${queued.length} queued${notQueued ? `, ${notQueued} could not be queued` : ""}.`, notQueued ? "info" : "success");
+      onDone(queued);
+      queryClient.invalidateQueries({ queryKey: ["documents"] });
+    },
+    onError: (e) => toast(errorMessage(e), "error"),
+  });
+
+  return (
+    <Button disabled={chosen.length === 0} loading={retry.isPending} onClick={() => retry.mutate()}>
+      Retry selected{chosen.length > 0 && ` (${chosen.length})`}
+    </Button>
   );
 }
 
