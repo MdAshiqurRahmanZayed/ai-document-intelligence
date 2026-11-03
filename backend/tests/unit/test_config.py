@@ -133,3 +133,45 @@ def test_invalid_extraction_settings_are_rejected(
     valid_env.setenv(name, value)
     with pytest.raises(ValidationError):
         Settings(_env_file=None)
+
+
+def test_api_key_is_optional_and_masked(valid_env: pytest.MonkeyPatch) -> None:
+    valid_env.delenv("API_KEY", raising=False)
+    assert Settings(_env_file=None).api_key is None
+
+    valid_env.setenv("API_KEY", "s3cret-value")
+    settings = Settings(_env_file=None)
+    assert settings.api_key is not None
+    assert settings.api_key.get_secret_value() == "s3cret-value"
+    assert "s3cret-value" not in repr(settings)  # a SecretStr never prints its value
+
+
+def test_embedding_model_has_a_default_and_can_be_overridden(
+    valid_env: pytest.MonkeyPatch,
+) -> None:
+    valid_env.delenv("EMBEDDING_MODEL", raising=False)
+    assert Settings(_env_file=None).embedding_model == "models/gemini-embedding-001"
+
+    valid_env.setenv("EMBEDDING_MODEL", "models/other")
+    assert Settings(_env_file=None).embedding_model == "models/other"
+
+
+@pytest.mark.parametrize("name", ["GOOGLE_API_KEY", "API_KEY"])
+def test_an_empty_optional_secret_means_not_set(valid_env: pytest.MonkeyPatch, name: str) -> None:
+    valid_env.setenv(name, "")  # what copying .env.example as it is produces
+
+    settings = Settings(_env_file=None)
+
+    assert settings.google_api_key is None and settings.api_key is None
+
+
+def test_an_empty_required_variable_is_reported_as_missing(
+    valid_env: pytest.MonkeyPatch, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.chdir(tmp_path)  # no .env here to fill the value in
+    valid_env.setenv("DATABASE_URL", "")
+
+    with pytest.raises(SystemExit) as exc:
+        load_settings()
+
+    assert "DATABASE_URL" in str(exc.value)
