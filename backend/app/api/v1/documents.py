@@ -3,11 +3,13 @@ from collections.abc import AsyncIterator
 from datetime import UTC, datetime
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, File, HTTPException, Path, Request, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, Path, Query, Request, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.v1.filters import document_filters
 from app.schemas.corrections import CorrectionRequest, CorrectionsOut, build_corrections
 from app.schemas.documents import DocumentOut, UploadItem, UploadResponse
+from app.schemas.listing import DocumentListOut, FileLinkOut, build_list
 from app.schemas.reprocess import ReprocessOut, ReprocessRequest
 from app.schemas.results import InvoiceOut, ResultOut, build_result, invoice_out
 from app.services.corrections import (
@@ -18,6 +20,7 @@ from app.services.corrections import (
 )
 from app.services.documents import get_document, ingest_upload
 from app.services.errors import DocumentNotFound
+from app.services.listing import DocumentFilters, InvalidCursor, list_documents
 from app.services.reprocess import (
     AlreadyQueued,
     CannotReprocess,
@@ -160,3 +163,31 @@ async def reprocess(
         document_id=result.document_id, status=result.status, from_stage=result.from_stage
     )
 
+
+FILE_LINK_SECONDS = 300
+
+
+@router.get("", response_model=DocumentListOut)
+async def list_all(
+    filters: Annotated[DocumentFilters, Depends(document_filters)],
+    session: Annotated[AsyncSession, Depends(get_session)],
+    limit: Annotated[int, Query(ge=1, le=100)] = 20,
+    cursor: Annotated[str | None, Query(max_length=200)] = None,
+) -> DocumentListOut:
+    try:
+        return build_list(await list_documents(session, filters, limit, cursor))
+    except InvalidCursor as exc:
+        raise HTTPException(status_code=422, detail="Invalid cursor") from exc
+
+
+@router.get("/{document_id}/file", response_model=FileLinkOut)
+async def read_file_link(
+    document_id: uuid.UUID,
+    request: Request,
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> FileLinkOut:
+    document = await get_document(session, document_id)
+    if document is None:
+        raise HTTPException(status_code=404, detail="Document not found")
+    url = request.app.state.storage.presigned_url(document.storage_key, FILE_LINK_SECONDS)
+    return FileLinkOut(url=url, expires_in=FILE_LINK_SECONDS)
