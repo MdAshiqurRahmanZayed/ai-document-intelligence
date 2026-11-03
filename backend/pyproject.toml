@@ -24,6 +24,7 @@ dependencies = [
     "charset-normalizer>=3.4.0",
     "langchain-core",
     "langchain-google-genai",
+    "langchain-text-splitters",
     "rapidfuzz",
     "dateparser",
     "pycountry",
