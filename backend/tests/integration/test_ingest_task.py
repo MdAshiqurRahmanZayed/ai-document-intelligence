@@ -8,11 +8,13 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import get_settings
-from app.db.models import Document, DocumentStatus, Page, ProcessingEvent
+from app.db.models import Chunk, Document, DocumentStatus, Page, ProcessingEvent
+from app.llm.embeddings import Embedder
 from app.llm.extract import ExtractedInvoice, InvoiceExtractor
 from tests import image_samples as images
 from tests import pdf_samples as samples
 from tests import spreadsheet_samples as sheets
+from tests.fake_embedder import FakeEmbedder
 from tests.fakes import FakeStorage
 from tests.helpers import make_document, run_sync, with_session
 from tests.invoice_fakes import TEXT, FakeExtractor, draft
@@ -437,7 +439,19 @@ def test_each_file_type_is_routed_to_its_own_ingest(
 
 
 @pytest.fixture
-def with_api_key(ingest: Task, monkeypatch: pytest.MonkeyPatch) -> None:
+def embed_queue(ingest: Task, monkeypatch: pytest.MonkeyPatch) -> list[str]:
+    """Ids of the documents queued for embedding, instead of sending them to a broker."""
+    import app.workers.tasks as tasks
+
+    queued: list[str] = []
+    monkeypatch.setattr(
+        tasks.embed_document, "delay", lambda document_id: queued.append(document_id)
+    )
+    return queued
+
+
+@pytest.fixture
+def with_api_key(ingest: Task, embed_queue: list[str], monkeypatch: pytest.MonkeyPatch) -> None:
     """Turn extraction on: it only runs when a Google API key is configured."""
     monkeypatch.setenv("GOOGLE_API_KEY", "test-key")
     get_settings.cache_clear()  # settings are cached; the `db` fixture clears them again after
@@ -600,3 +614,173 @@ def test_exhausted_extraction_retries_fail_the_document(
     assert document.error_message == "RuntimeError"
     failed = [e.attempt for e in events if e.status == "failed" and e.stage == "extract"]
     assert failed == list(range(1, extract.max_retries + 2))
+
+
+# --- indexing and embeddings ----------------------------------------------------------------
+
+
+def chunk_rows(db: str, document_id: uuid.UUID) -> list[Chunk]:
+    async def read(session: AsyncSession) -> list[Chunk]:
+        rows = await session.scalars(
+            select(Chunk).where(Chunk.document_id == document_id).order_by(Chunk.id)
+        )
+        return list(rows)
+
+    return with_session(db, read)
+
+
+def add_chunks(db: str, document_id: uuid.UUID, *texts: str) -> None:
+    async def add(session: AsyncSession) -> None:
+        session.add_all(
+            Chunk(document_id=document_id, page_no=1, chunk_no=n, text=text)
+            for n, text in enumerate(texts)
+        )
+        await session.commit()
+
+    with_session(db, add)
+
+
+@pytest.fixture
+def embed(ingest: Task) -> Task:
+    import app.workers.tasks as tasks
+
+    return tasks.embed_document
+
+
+def use_embedder(monkeypatch: pytest.MonkeyPatch, embedder: Embedder) -> None:
+    import app.workers.tasks as tasks
+
+    monkeypatch.setattr(tasks, "build_embedder", lambda settings: embedder)
+
+
+def test_a_text_pdf_is_indexed_when_it_is_ingested(
+    db: str, ingest: Task, storage: FakeStorage
+) -> None:
+    document_id = pdf_document(db, storage, samples.text_pdf(2))
+
+    ingest.apply(args=[str(document_id)])
+
+    chunks = chunk_rows(db, document_id)
+    assert [c.page_no for c in chunks] == [1, 2]
+    assert "Invoice number 1042" in chunks[0].text
+
+
+def test_a_scanned_image_is_indexed_only_after_ocr(
+    db: str, ingest: Task, ocr: Task, storage: FakeStorage
+) -> None:
+    document_id = image_document(db, storage, images.encode(images.text_image()))
+
+    ingest.apply(args=[str(document_id)])
+    assert chunk_rows(db, document_id) == []  # no text yet
+
+    ocr.apply(args=[str(document_id)])
+
+    chunks = chunk_rows(db, document_id)
+    assert chunks and "INVOICE" in chunks[0].text
+
+
+def test_a_spreadsheet_is_indexed(db: str, ingest: Task, storage: FakeStorage) -> None:
+    document_id = spreadsheet_document(db, storage, sheets.multi_sheet_xlsx())
+
+    ingest.apply(args=[str(document_id)])
+
+    assert [c.text.splitlines()[0] for c in chunk_rows(db, document_id)] == [
+        "Sheet: Invoices",
+        "Sheet: Merged",
+    ]
+
+
+def test_without_a_key_no_embedding_job_is_queued(
+    db: str, ingest: Task, embed_queue: list[str], storage: FakeStorage
+) -> None:
+    document_id = pdf_document(db, storage, samples.text_pdf(1))
+
+    ingest.apply(args=[str(document_id)])
+
+    assert embed_queue == [] and chunk_rows(db, document_id)  # indexed, but not embedded
+
+
+def test_with_a_key_embedding_is_queued_once_the_text_is_ready(
+    db: str,
+    ingest: Task,
+    ocr: Task,
+    ocr_queue: list[str],
+    with_api_key: None,
+    embed_queue: list[str],
+    extract_queue: list[str],
+    storage: FakeStorage,
+) -> None:
+    text_doc = pdf_document(db, storage, samples.text_pdf(1))
+    scanned = image_document(db, storage, images.encode(images.text_image()))
+
+    ingest.apply(args=[str(text_doc)])
+    assert embed_queue == [str(text_doc)]  # right after ingest, alongside extraction
+
+    ingest.apply(args=[str(scanned)])
+    assert embed_queue == [str(text_doc)]  # not yet: this one still needs OCR
+    ocr.apply(args=[str(scanned)])
+    assert embed_queue == [str(text_doc), str(scanned)]
+
+
+def test_the_embed_job_fills_the_embeddings_and_leaves_the_status_alone(
+    db: str, embed: Task, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    use_embedder(monkeypatch, FakeEmbedder())
+    document_id = queued_document(db, source_type="pdf", status=DocumentStatus.COMPLETED)
+    add_chunks(db, document_id, "payment due", "delivery soon")
+
+    embed.apply(args=[str(document_id)])
+
+    assert all(c.embedding is not None for c in chunk_rows(db, document_id))
+    document, events = load(db, document_id)
+    assert document.status == DocumentStatus.COMPLETED
+    assert [(e.stage, e.status) for e in events] == [("embed", "started"), ("embed", "succeeded")]
+
+
+class FlakyEmbedder(FakeEmbedder):
+    """Fails the first `failures` calls, then embeds normally."""
+
+    def __init__(self, failures: int) -> None:
+        super().__init__()
+        self.failures = failures
+
+    def embed_documents(self, texts: Sequence[str]) -> list[list[float]]:
+        if self.failures > 0:
+            self.failures -= 1
+            raise RuntimeError("embedding model is down")
+        return super().embed_documents(texts)
+
+
+def test_an_embedding_error_is_retried_then_succeeds(
+    db: str, embed: Task, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    use_embedder(monkeypatch, FlakyEmbedder(failures=1))
+    document_id = queued_document(db, source_type="pdf", status=DocumentStatus.COMPLETED)
+    add_chunks(db, document_id, "payment due")
+
+    embed.apply(args=[str(document_id)])
+
+    _, events = load(db, document_id)
+    assert [(e.status, e.attempt) for e in events] == [
+        ("started", 1),
+        ("failed", 1),
+        ("started", 2),
+        ("succeeded", 2),
+    ]
+    assert chunk_rows(db, document_id)[0].embedding is not None
+
+
+def test_exhausted_embedding_retries_are_recorded_and_the_document_is_untouched(
+    db: str, embed: Task, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    use_embedder(monkeypatch, FlakyEmbedder(failures=99))
+    document_id = queued_document(db, source_type="pdf", status=DocumentStatus.COMPLETED)
+    add_chunks(db, document_id, "payment due")
+
+    embed.apply(args=[str(document_id)])
+
+    document, events = load(db, document_id)
+    failed = [e.attempt for e in events if e.status == "failed" and e.stage == "embed"]
+    assert failed == list(range(1, embed.max_retries + 2))
+    assert (document.status, document.error_code) == (DocumentStatus.COMPLETED, None)
+    assert chunk_rows(db, document_id)[0].embedding is None  # still found by keyword search

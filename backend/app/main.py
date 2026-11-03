@@ -8,10 +8,11 @@ from sqlalchemy.ext.asyncio import create_async_engine
 
 from app.api import health
 from app.api.auth import require_api_key
-from app.api.v1 import cross_verify, documents, jobs
+from app.api.v1 import cross_verify, documents, jobs, search
 from app.core.config import Settings, get_settings
 from app.core.logging import RequestLogMiddleware, configure_logging, log
 from app.db.session import make_session_factory
+from app.llm.embeddings import build_embedder
 from app.services.readiness import build_checks
 from app.services.storage import build_s3_storage
 
@@ -48,6 +49,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     # Replaceable in tests, like app.state.checks.
     app.state.enqueue = enqueue_ingest
     app.state.enqueue_extract = enqueue_extract
+    # Semantic search needs a model, which needs a key; replaceable in tests.
+    app.state.embedder = build_embedder(settings) if settings.google_api_key else None
     app.state.checks = build_checks(settings, engine)
     app.add_middleware(
         CORSMiddleware,
@@ -62,6 +65,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(documents.router, dependencies=protected)
     app.include_router(cross_verify.router, dependencies=protected)
     app.include_router(jobs.router, dependencies=protected)
+    app.include_router(search.router, dependencies=protected)
 
     if settings.api_key is None:
         log.warning("auth_disabled", reason="API_KEY is not set, the API is open")
