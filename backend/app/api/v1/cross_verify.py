@@ -5,7 +5,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.documents import get_session
 from app.schemas.cross_verify import CrossVerifyRequest, CrossVerifyResponse, build_response
-from app.services.cross_verify import DocumentNotFound, NotExtracted, cross_verify
+from app.services.cross_verify import NotExtracted, cross_verify
+from app.services.errors import DocumentNotFound
 
 router = APIRouter(prefix="/api/v1/cross-verify", tags=["cross-verify"])
 
