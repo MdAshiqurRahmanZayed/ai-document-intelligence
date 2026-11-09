@@ -26,7 +26,6 @@
 
 - [x] 5.1 The user updates `.env.example` (the assistant cannot): add `FLOWER_USER`, `FLOWER_PASSWORD` (placeholder), `FLOWER_PORT`, `API_KEY` (empty, with the `openssl rand -hex 32` hint), set `GEMINI_EXTRACTION_MODEL=gemini-3.5-flash`, `GEMINI_FALLBACK_MODEL=gemini-3.8-flash`, keep `EMBEDDING_MODEL=models/gemini-embedding-001`, remove `NEXT_PUBLIC_API_URL`. Verify: the user pastes the file; compare with the list from 2.2.
 - [x] 5.2 Compare the variable list from 2.2 with the pasted `.env.example`. Verify: none missing, none unused, no real secret values.
-- [ ] 5.3 The user runs from a fresh clone: `cp .env.example .env`, `make up`, `make migrate`, `make check`, `make e2e`, then the quick start in the README. Verify: all pass; record the result (or each failure) for the PR description.
 
 ## 6. Finish
 
