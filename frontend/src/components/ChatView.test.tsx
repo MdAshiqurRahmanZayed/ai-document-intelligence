@@ -458,6 +458,22 @@ describe("ChatView sessions", () => {
     expect(screen.getByRole("button", { name: "Ask" })).toBeDisabled();
   });
 
+  it("shows not found, not a connection error, for an id the API rejects as invalid", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => Response.json({ detail: [{ loc: ["path", "session_id"], msg: "Input should be a valid UUID" }] }, { status: 422 })));
+    renderWithClient(<ChatView sessionId="not-a-uuid" />);
+
+    expect(await screen.findByText("This chat was not found")).toBeInTheDocument();
+    expect(screen.queryByText("Something went wrong")).not.toBeInTheDocument();
+  });
+
+  it("shows a retryable error when the saved chat cannot be loaded", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => Response.json({ detail: "bad gateway" }, { status: 502 })));
+    renderWithClient(<ChatView sessionId="s1" />);
+
+    expect(await screen.findByText("Something went wrong")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Try again" })).toBeInTheDocument();
+  });
+
   it("stops a streaming answer before showing another chat", async () => {
     const stream = openStream();
     let streamSignal: AbortSignal | undefined;

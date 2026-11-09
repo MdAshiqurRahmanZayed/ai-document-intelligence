@@ -77,7 +77,8 @@ export function ChatView({ sessionId = null, onSessionChange, onTurnEnd }: Props
         setLoading("idle");
       })
       .catch((error) => {
-        if (current) setLoading(error instanceof ApiError && error.status === 404 ? "missing" : "failed");
+        // 422: the address holds something that is not a chat id, which is as good as an unknown one
+        if (current) setLoading(error instanceof ApiError && (error.status === 404 || error.status === 422) ? "missing" : "failed");
       });
     return () => {
       current = false;
