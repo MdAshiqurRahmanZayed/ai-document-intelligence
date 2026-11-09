@@ -74,7 +74,7 @@ flowchart LR
 3. **OCR** (queue `ocr`). Tesseract after OpenCV cleanup (deskew, denoise, contrast); pages are read in parallel.
 4. **Extract** (queue `llm`, rate limited). The page text goes to Gemini with a structured-output schema. Every field is optional and `null` when absent; the model must quote the source text for each value, and values are checked against the page.
 5. **Validate.** Rules check arithmetic (lines, subtotal, tax, total), dates, currency, duplicates (same supplier and invoice number) and low confidence. Problems become findings, not silent fixes. A document with findings is `NEEDS_REVIEW`.
-6. **Embed** (queue `embed`). Page text is chunked and embedded; keyword search uses PostgreSQL full-text search, semantic search uses pgvector, hybrid fuses both with reciprocal rank fusion.
+6. **Embed** (queue `embed`). Page text is chunked and embedded; keyword search uses PostgreSQL full-text search, semantic search uses pgvector, hybrid fuses both with reciprocal rank fusion. See [Search](#search).
 7. **Review.** The web UI shows progress, the original beside the extracted invoice, findings on their fields, a correction form with an audit trail, reprocess and retry, and search.
 
 Every stage is idempotent and logs to `processing_events` (stage, status, duration, error), which the document page shows as a timeline.
@@ -88,6 +88,31 @@ Every stage is idempotent and logs to `processing_events` (stage, status, durati
 - **The browser never calls the API directly.** The web server forwards requests and adds the API key, and streams stored files, so the key stays on the server and storage needs no public address or CORS. See [docs/security.md](docs/security.md).
 - **Money is `Decimal` in the API and a string in the browser,** never a float.
 - **LangChain is a thin layer** (chat model, structured output, embeddings only).
+
+## Search
+
+Search works on **chunks**: after text extraction each page is cut into pieces of about 1000 characters (150 overlap, so a sentence at a boundary is whole in one piece). Each chunk is stored with a full-text index and, once the embed job has run, a vector. A result is the best chunk of each document, with its page number. All three modes accept the same filters as the document list (status, supplier, invoice number, dates, amounts, currency). Pick the mode on the Search page, or with `mode=` on `GET /api/v1/search`.
+
+| Mode | Finds | Good for | Weak at |
+|---|---|---|---|
+| **Keyword** | chunks that contain the words | invoice numbers, names, exact amounts, quoted phrases | synonyms and questions: "bakery" does not find "croissant" |
+| **Semantic** | chunks with a similar meaning | questions and descriptions: "which supplier sells bakery products" | exact identifiers; a single generic word |
+| **Hybrid** (default) | both, merged | most searches | nothing in particular, but it needs the embeddings for the semantic half |
+
+**Keyword** uses PostgreSQL full-text search (a `tsvector` column with a GIN index, the `simple` configuration, so words match as written in any language and there is no stemming). The query is read as web-search syntax: words are ANDed, `"quoted phrases"` match as a phrase, and `-word` excludes. The match is highlighted in the snippet. Because every word must be present, a long question usually matches nothing; use few, specific words.
+
+**Semantic** turns the chunk and the query into vectors (Gemini `models/gemini-embedding-001`, 768 numbers) and returns the chunks closest in direction (cosine distance, pgvector HNSW index). It finds text that means the same without sharing words. It always returns the closest chunks, even when none is relevant, and its scores sit close together (on the sample set most are between 0.60 and 0.65), so read the order, not the number. It needs `GOOGLE_API_KEY`, and a chunk can only be found once its embedding exists.
+
+**Hybrid** runs both and merges the two rankings with reciprocal rank fusion: a chunk's score is the sum of `1 / (60 + rank)` over the lists it appears in. A chunk near the top of both lists beats one at the top of only one, and no score tuning is needed because only ranks are used. Exact identifiers come from the keyword side and fuzzy questions from the semantic side.
+
+**Fallbacks.** Without a key, hybrid becomes keyword search and the response says so (`mode_used`); semantic returns 409 `semantic_unavailable`. If embeddings are missing or failed, semantic and hybrid return nothing from the vector side while keyword keeps working, so check the embed events on the document page (see [Troubleshooting](#troubleshooting)).
+
+| Example | Use |
+|---|---|
+| `EV-1011` | keyword or hybrid |
+| `"payment terms"` | keyword or hybrid |
+| `which supplier sells bakery products` | semantic or hybrid |
+| `cloud hosting invoice` | semantic or hybrid |
 
 ## Tests
 
@@ -150,6 +175,7 @@ The weak spot is image quality: the lowest-quality image gave six wrong fields (
 | `.env not found` | Run `cp .env.example .env`. |
 | `port is already allocated` | Change that port in `.env` (and in `DATABASE_URL` for Postgres), then `make up`. |
 | `/readyz` returns 503 | Check which dependency says `error`; the reason is in `docker compose logs api`. |
+| Semantic search returns nothing, hybrid acts like keyword | The embedding model is not available to your key (check `EMBEDDING_MODEL`; the default is `models/gemini-embedding-001`) or the embed jobs failed. Look for failed `embed` events on the document page, fix `.env`, run `make up`, then re-embed (re-upload, or queue the embed job again). |
 | Documents fail with a "model not found" error | The model ID is retired or not open to your key; set `GEMINI_EXTRACTION_MODEL` and `GEMINI_FALLBACK_MODEL` in `.env`, then `make up`. |
 | Pages fail after pulling | Run `make migrate`. |
 | Start over | `docker compose down -v && make up && make migrate` (deletes all data) |
