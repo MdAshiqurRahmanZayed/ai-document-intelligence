@@ -9,4 +9,4 @@ async function handle(request: Request, ctx: { params: Promise<{ path: string[] 
   });
 }
 
-export { handle as GET, handle as PATCH, handle as POST };
+export { handle as DELETE, handle as GET, handle as PATCH, handle as POST };

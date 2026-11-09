@@ -8,7 +8,8 @@ export interface ProxyEnv {
   key?: string;
 }
 
-const API_RESOURCES = new Set(["documents", "search", "jobs", "cross-verify"]);
+const API_RESOURCES = new Set(["documents", "search", "chat", "jobs", "cross-verify"]);
+const SESSION_PATH = /^\/api\/v1\/chat\/sessions\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const SEGMENT = /^[A-Za-z0-9._~-]+$/;
 
 /** Maps a path under /api/backend to the API path it may reach, or null when it may not. */
@@ -32,7 +33,9 @@ export async function forward(
   fetchFn: typeof fetch = fetch,
 ): Promise<Response> {
   const path = upstreamPath(segments);
-  if (!path || !["GET", "POST", "PATCH"].includes(request.method)) {
+  // DELETE is allowed for one thing only: removing a chat session.
+  const allowed = request.method === "DELETE" ? path !== null && SESSION_PATH.test(path) : ["GET", "POST", "PATCH"].includes(request.method);
+  if (!path || !allowed) {
     return json(404, "Not found");
   }
 
@@ -64,10 +67,16 @@ export async function forward(
     return json(502, "The API could not be reached");
   }
 
-  // Only the status, body and content type go back; nothing else the API sent is copied.
+  // Only the status, body and content type go back (plus the no-buffering headers of a stream);
+  // nothing else the API sent is copied.
   const out = new Headers();
   const type = upstream.headers.get("content-type");
   if (type) out.set("content-type", type);
+  // An event stream (chat) must reach the browser as it is written, not when it ends.
+  if (type?.startsWith("text/event-stream")) {
+    out.set("cache-control", "no-cache, no-transform");
+    out.set("x-accel-buffering", "no");
+  }
   const empty = upstream.status === 204 || upstream.status === 304;
   return new Response(empty ? null : upstream.body, { status: upstream.status, headers: out });
 }
