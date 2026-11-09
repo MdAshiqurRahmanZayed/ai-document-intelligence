@@ -62,6 +62,19 @@ class SearchOutcome:
     results: list[SearchResult]
 
 
+@dataclass(frozen=True)
+class RetrievedChunk:
+    """A chunk with its whole text, as the answering model needs it."""
+
+    chunk_id: int
+    document_id: uuid.UUID
+    filename: str
+    page_no: int
+    text: str
+    word_match: bool  # the keyword search found it
+    similarity: float | None  # cosine similarity to the query; None if semantic search did not
+
+
 def keyword_snippet(headline: str) -> str:
     """Escape everything the document said, then turn the match markers into <mark> tags."""
     return html.escape(headline).replace(MARK_START, "<mark>").replace(MARK_STOP, "</mark>")
@@ -190,3 +203,48 @@ async def search(
             for h in best
         ],
     )
+
+
+# Chunks loaded with their text after ranking: enough for the caller to choose from, without
+# reading all the candidates of both rankings.
+RETRIEVED_CHUNKS = 20
+
+
+async def retrieve_chunks(
+    session: AsyncSession,
+    query: str,
+    filters: DocumentFilters,
+    embedder: Embedder | None,
+) -> list[RetrievedChunk]:
+    """The best chunks for a query, best first, with their text. The ranking is the one of
+    hybrid search; without an embedder it is keyword search."""
+    keyword = await keyword_hits(session, query, filters)
+    semantic: list[ChunkHit] = []
+    if embedder is not None:
+        vector = await asyncio.to_thread(embedder.embed_query, query)
+        semantic = await semantic_hits(session, vector, filters)
+
+    ranked = fuse(keyword, semantic)[:RETRIEVED_CHUNKS]
+    if not ranked:
+        return []
+    matched = {h.chunk_id for h in keyword}
+    similarity = {h.chunk_id: h.score for h in semantic}
+
+    rows = await session.execute(
+        select(Chunk.id, Chunk.document_id, Chunk.page_no, Chunk.text, Document.filename)
+        .join(Document, Document.id == Chunk.document_id)
+        .where(Chunk.id.in_([h.chunk_id for h in ranked]))
+    )
+    by_id = {row.id: row for row in rows}
+    return [
+        RetrievedChunk(
+            chunk_id=h.chunk_id,
+            document_id=h.document_id,
+            filename=by_id[h.chunk_id].filename,
+            page_no=h.page_no,
+            text=by_id[h.chunk_id].text,
+            word_match=h.chunk_id in matched,
+            similarity=similarity.get(h.chunk_id),
+        )
+        for h in ranked
+    ]

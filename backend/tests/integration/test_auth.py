@@ -36,7 +36,9 @@ async def test_every_versioned_route_is_protected(secured: Api) -> None:
 
     assert (await secured.client.post(URL, files=files)).status_code == 401
     assert (await secured.client.post("/api/v1/cross-verify", json={})).status_code == 401
+    assert (await secured.client.post("/api/v1/chat", json={"question": "hi"})).status_code == 401
     assert (await secured.client.get(f"{UNKNOWN}/result")).status_code == 401
+    assert (await secured.client.get("/api/v1/chat/sessions")).status_code == 401
     assert secured.enqueue.calls == []  # nothing was stored or queued
 
 
