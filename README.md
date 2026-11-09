@@ -196,3 +196,47 @@ The weak spot is image quality: the lowest-quality image gave six wrong fields (
 | Documents fail with a "model not found" error | The model ID is retired or not open to your key; set `GEMINI_EXTRACTION_MODEL` and `GEMINI_FALLBACK_MODEL` in `.env`, then `make up`. |
 | Pages fail after pulling | Run `make migrate`. |
 | Start over | `docker compose down -v && make up && make migrate` (deletes all data) |
+
+## Screenshots
+
+Taken from the running stack with the generated sample documents.
+
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <b>Documents (home)</b><br>Everything uploaded, with status, progress and extracted invoices. <code>/</code> opens here.<br><br>
+      <img src="docs/images/documents.jpg" alt="Documents list with filters, status and extracted invoices" width="100%">
+    </td>
+    <td width="50%" valign="top">
+      <b>Upload</b><br>Drop several files at once; each is checked, sent and processed in the background.<br><br>
+      <img src="docs/images/upload.jpg" alt="Upload page with a drop zone" width="100%">
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <b>Review</b><br>Documents that need a person: values to check, files that failed.<br><br>
+      <img src="docs/images/review.jpg" alt="Review queue with the documents that need attention" width="100%">
+    </td>
+    <td width="50%" valign="top">
+      <b>Document detail</b><br>Steps, the original beside the extracted invoice, findings on their field, correction form.<br><br>
+      <img src="docs/images/document-detail.jpg" alt="Document detail with the original, processing steps and validation findings" width="100%">
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <b>Search</b><br>Hybrid, keyword or semantic search with the match highlighted.<br><br>
+      <img src="docs/images/search.jpg" alt="Search results for hosting with the match highlighted" width="100%">
+    </td>
+    <td width="50%" valign="top">
+      <b>Chat</b><br>Answer on the left, the sources it cites on the right; saved chats listed beside it.<br><br>
+      <img src="docs/images/chat-answer.jpg" alt="Chat answer with its cited sources and the saved chats list" width="100%">
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <b>Chat on a narrow screen</b><br>Answer first, sources below, the chat list behind the <b>Chats</b> button.<br><br>
+      <img src="docs/images/chat-narrow.png" alt="Chat on a narrow screen: answer first, sources below" width="50%">
+    </td>
+    <td width="50%"></td>
+  </tr>
+</table>
