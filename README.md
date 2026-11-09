@@ -1,6 +1,6 @@
 # AI Document Intelligence
 
-Upload invoices and receipts (PDF, scanned PDF, JPG/PNG/TIFF, XLSX/XLS, CSV). The system reads the text (directly, or with OCR for scans), extracts structured invoice data with an LLM, validates it, lets a person review and correct it in a web UI, and makes everything searchable.
+Upload invoices and receipts (PDF, scanned PDF, JPG/PNG/TIFF, XLSX/XLS, CSV). The system reads the text (directly, or with OCR for scans), extracts structured invoice data with an LLM, validates it, lets a person review and correct it in a web UI, makes everything searchable, and answers questions in plain words from the stored text, with numbered citations.
 
 Docs: [API](docs/api.md) · [frontend](docs/frontend.md) · [database](docs/database-schema.md) · [testing](docs/testing.md) · [evaluation](eval/results/report.md) · [performance](docs/performance.md) · [monitoring](docs/monitoring.md) · [security](docs/security.md) · [AI disclosure](docs/ai-disclosure.md)
 
@@ -16,7 +16,7 @@ make migrate             # create the database tables (also after pulling new mi
 
 Open http://localhost:3000. The dot in the header is green when the API, database, Redis and storage are all up.
 
-Without a `GOOGLE_API_KEY` the system still reads files, runs OCR, and does keyword search. Extraction and semantic search need the key.
+Without a `GOOGLE_API_KEY` the system still reads files, runs OCR, and does keyword search. Extraction, semantic search and chat need the key.
 
 To try it, generate sample documents (needs Python with [uv](https://docs.astral.sh/uv/) on the host) and drop them on the Upload page:
 
@@ -114,6 +114,22 @@ Search works on **chunks**: after text extraction each page is cut into pieces o
 | `which supplier sells bakery products` | semantic or hybrid |
 | `cloud hosting invoice` | semantic or hybrid |
 
+## Chat
+
+The Chat page (`/chat`, API `POST /api/v1/chat`) answers a question in words, from the text of your documents, and shows where each claim came from.
+
+1. The question is matched against the chunks with the same ranking as hybrid search, within the page's filters.
+2. Only relevant chunks are kept: at most 6, two per document, 4000 characters. A chunk is relevant if it matched the words, or its meaning is close enough to the question (similarity of at least 0.62, a value set from nine questions on the sample invoices; it is a starting point, not a measured optimum).
+3. The model (the configured Gemini extraction model) gets those chunks and the question, and is told to answer only from them, cite with `[n]`, and say so when they do not answer. The chunks are delimited as data, as in extraction.
+4. The answer streams in. Each `[n]` is a chip that shows the quote of source n; the sources the answer cites are listed beside it (answer left, numbered list right, only the cited ones once it is done) and link to the document, and hovering a chip highlights its source. A `[n]` that names no source is not shown. The answer ends with up to three suggested follow-up questions, produced by the same call.
+5. For a follow-up, the question is first rewritten into one that stands alone, using the last three stored turns of the chat; only that rewrite sees the history, so the answering call stays small. When nothing relevant is found no model call is made and the page says so.
+
+Cost on the sample invoices (one observation, not a benchmark): an answer used about 1000 to 1500 input tokens and under 150 output tokens, a rewrite about 175 input tokens, and an answer took about two seconds. Every model call logs its model and token counts, never the text.
+
+6. Chats are saved. Each conversation is a session with a title (the first question, which you can rename); questions, answers, their sources and follow-ups are kept in the database, so a reload or the session list brings a conversation back exactly as it was, and a chat can be deleted. A stopped or failed answer is kept too and marked as such.
+
+What it does not do: it has no accounts, so every saved chat is visible to everyone who can reach the web server, and the text is stored unencrypted until the chat is deleted; it cannot answer questions that need every document at once ("total spend per supplier"), because it reads a handful of chunks, and it does not search the web. A citation shows that a source was retrieved, not that it supports the sentence; whether it does is not measured, and the evaluation report does not cover chat. Check the quote.
+
 ## Tests
 
 All run in throwaway Docker containers, so no local Python or Node is needed (except `make e2e`, which runs Playwright on the host). They never touch the running stack and never call the real LLM.
@@ -163,8 +179,9 @@ The weak spot is image quality: the lowest-quality image gave six wrong fields (
 ## Known limits
 
 - **The evaluation is small and synthetic.** It ran on 33 generated documents with known true values (see [Evaluation](#evaluation)), not on real invoices, so it shows that the pipeline works and where it is weak, not how accurate it is in the real world. Damaged scans can produce wrong values that validation does not catch.
+- **Chat is not evaluated, and its saved chats are shared.** See [Chat](#chat): answers are read from a few chunks, citations are not checked for support, and saved conversations are stored as plain text, visible to everyone with access (there are no accounts).
 - **No user accounts.** One shared API key; the editor name on a correction is typed in, not authenticated.
-- **Model quota.** On a free-tier key the stronger model may be unavailable (quota or demand); a flash model is used for both extraction and fallback by default.
+- **Model quota.** On a free-tier key the stronger model may be unavailable (quota or demand); a flash model is used for both extraction and fallback by default. The free tier allows about 20 requests a day per model, and a chat question costs one (two with history), so a demo has room for a handful of questions.
 - **Previews.** TIFF and spreadsheets are offered as a download, not a preview. OCR shows no per-page percentage because the API does not report it.
 - **Languages.** OCR and the prompt are tuned for English invoices; other languages are not tested.
 
