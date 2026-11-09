@@ -6,7 +6,7 @@ Defines how the web interface reaches the API without exposing the API key to th
 ## Requirements
 
 ### Requirement: Browser calls go through the web server
-The web interface SHALL send every data request to its own origin. The web server SHALL forward it to the API, add the `X-API-Key` header from a server-side setting when one is configured, and return the API's status code and JSON body unchanged. The API key SHALL NOT appear in any file or response sent to the browser.
+The web interface SHALL send every data request to its own origin. The web server SHALL forward it to the API, add the `X-API-Key` header from a server-side setting when one is configured, and return the API's status code and JSON body unchanged. The API key SHALL NOT appear in any file or response sent to the browser. The web server SHALL forward the `documents`, `search`, `jobs`, `cross-verify` and `chat` resources, and SHALL pass a `text/event-stream` response to the browser as it arrives, without holding it back until it ends.
 
 #### Scenario: Key added on the server
 - **GIVEN** the web server has an API key configured
@@ -29,6 +29,14 @@ The web interface SHALL send every data request to its own origin. The web serve
 - **GIVEN** no API key is configured
 - **WHEN** the browser sends a request
 - **THEN** it is forwarded without an `X-API-Key` header
+
+#### Scenario: Chat is forwarded
+- **WHEN** the browser posts a question to the chat resource
+- **THEN** the API receives it with `X-API-Key` and the browser receives the answer events
+
+#### Scenario: Stream is not buffered
+- **WHEN** the API sends the first event of a stream and then waits
+- **THEN** the browser receives that event before the stream ends
 
 ### Requirement: Original files are served through the web server
 The web interface SHALL show and download a stored original from its own origin. The web server SHALL obtain the file through the API and stream it to the browser, honouring range requests, and SHALL mark it so the browser neither guesses its type nor lets it run scripts. A request for a document that does not exist SHALL answer 404.
@@ -70,3 +78,14 @@ The web interface SHALL turn the API's error responses into short messages a per
 #### Scenario: Unknown error
 - **WHEN** the API answers with an error the interface has no message for
 - **THEN** it shows a generic failure message with the status code
+
+### Requirement: Chat sessions can be deleted through the web server
+The web server SHALL forward a `DELETE` request only when the path is `chat/sessions/<uuid>`. `DELETE` to any other path SHALL be answered 404 and not forwarded. All other methods and rules are unchanged.
+
+#### Scenario: Session delete forwarded
+- **WHEN** the browser sends `DELETE /api/backend/chat/sessions/<uuid>`
+- **THEN** the API receives it with `X-API-Key` and the browser receives its status
+
+#### Scenario: Other deletes refused
+- **WHEN** the browser sends `DELETE /api/backend/documents/<uuid>`
+- **THEN** the response is 404 and nothing reaches the API

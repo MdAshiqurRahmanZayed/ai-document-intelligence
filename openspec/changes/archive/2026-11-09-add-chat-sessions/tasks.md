@@ -26,5 +26,5 @@
 
 ## 6. Check in the running stack and finish
 
-- [ ] 6.1 With the stack up and a key set: ask two questions in a new chat, reload (both come back with chips and sources), rename the session, press Stop mid-answer and reopen it (partial text, marked stopped), start a second chat, delete the first. Verify the list order, titles and the database rows match what the page showed; look at `/chat` in a browser once (with the user's permission) for the list layout on wide and narrow widths.
+- [x] 6.1 With the stack up and a key set: ask two questions in a new chat, reload (both come back with chips and sources), rename the session, press Stop mid-answer and reopen it (partial text, marked stopped), start a second chat, delete the first. Verify the list order, titles and the database rows match what the page showed; look at `/chat` in a browser once (with the user's permission) for the list layout on wide and narrow widths.
 - [x] 6.2 Run `make check` and `openspec validate --all --strict`. Verify both are green.

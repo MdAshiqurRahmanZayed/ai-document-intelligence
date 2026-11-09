@@ -33,7 +33,7 @@
 - [x] 6.4 Add the Chat link to `Nav.tsx`. Verify the Nav test shows it as active on `/chat`.
 - [x] 6.5 Update `docs/frontend.md` (the page, events, citations, history) and `docs/testing.md`. Verify `make lint` and `make test` pass.
 
-- [ ] 6.6 Lay each turn out as the answer on the left and a numbered source list on the right (one column on narrow screens, full width without sources), and highlight a source when its chip is hovered or focused. Verify with component tests: the list has numbered rows with file, page and quote; hovering and focusing a chip marks its row and leaving unmarks it; no list without sources; and by looking at the page in a browser once.
+- [x] 6.6 Lay each turn out as the answer on the left and a numbered source list on the right (one column on narrow screens, full width without sources), and highlight a source when its chip is hovered or focused. Verify with component tests: the list has numbered rows with file, page and quote; hovering and focusing a chip marks its row and leaving unmarks it; no list without sources; and by looking at the page in a browser once.
 - [x] 6.7 Show only the sources a finished answer cites (all of them while it is written; none when it cites nothing; a stopped or failed answer lists what its text cites). Verify with component tests: cited-only list and count, everything during writing then filtered at the end, no list when nothing is cited, and restored sessions behave the same.
 
 ## 7. Check in the running stack and finish
