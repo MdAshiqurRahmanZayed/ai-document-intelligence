@@ -11,6 +11,8 @@ Keep this file in sync with the code whenever an endpoint, field or error reason
 - [Upload documents](#upload-documents)
 - [List documents](#list-documents)
 - [Search](#search)
+- [Chat](#chat)
+- [Chat sessions](#chat-sessions)
 - [Get a document](#get-a-document)
 - [Download link for the original file](#download-link-for-the-original-file)
 - [Get the extraction result](#get-the-extraction-result)
@@ -156,6 +158,78 @@ Each result is the **best chunk of one document**: `page_no` is its page and `sn
 | `200` with `"results": []` | Nothing matches |
 | `409` | `{"detail": {"reason": "semantic_unavailable"}}`: `mode=semantic` without a Google API key |
 | `422` | Missing or blank `q`, unknown `mode`, `limit` outside 1 to 50, or an invalid filter |
+
+## Chat
+
+`POST /api/v1/chat`: ask a question and get an answer read from the text of the stored documents, with numbered citations. The reply is a stream of server-sent events (`text/event-stream`).
+
+```bash
+curl -N -X POST 'localhost:8000/api/v1/chat?currency=SEK' \
+  -H 'Content-Type: application/json' \
+  -d '{"question": "Which supplier invoiced hosting?", "history": []}'
+```
+
+```
+event: sources
+data: {"sources": [{"n": 1, "document_id": "3f2a…", "filename": "invoice-scan.png", "page_no": 1, "quote": "Cirrus Cloud Services … Hosting …"}]}
+
+event: token
+data: {"text": "Cirrus Cloud Services invoiced hosting [1]."}
+
+event: done
+data: {"citations": [1], "suggestions": ["What was the total?", "When is it due?"]}
+```
+
+**Request body**
+
+| Field | Meaning |
+|---|---|
+| `question` | 1 to 1000 characters, not blank |
+| `history` | Optional earlier messages, at most 6 (the last three turns), each `{"role": "user" or "assistant", "content": up to 2000 characters}`. Ignored when `session_id` is sent |
+| `session_id` | Optional id of a [chat session](#chat-sessions). With it the question and the answer are saved in the session and the history is read from the stored messages. Without it nothing is stored |
+
+The filters are query parameters, the same as the [list](#list-documents): `status`, `supplier`, `invoice_number`, `date_from`, `date_to`, `amount_min`, `amount_max`, `currency`. They limit which documents the answer may be read from.
+
+**Events**, always in this order: one `sources`, then any number of `token`, then one `done`, or an `error` in place of `done`.
+
+| Event | Body |
+|---|---|
+| `sources` | `sources`: the chunks the model reads, each `n`, `document_id`, `filename`, `page_no` and a plain-text `quote` of at most 300 characters. `rewritten_question` is present only when `history` was sent and the question was rewritten. Sent before the first `token`. |
+| `token` | `text`: the next part of the answer. It can hold `[n]` markers that refer to `sources`. |
+| `done` | `citations`: the numbers of the sources the answer cites that exist (an invented number is left out). `suggestions`: up to 3 follow-up questions. |
+| `error` | `reason`: `provider_limited` (the model provider refused for quota or rate) or `model_failed`. Text already sent stays valid; the stream ends. |
+
+**What the model reads.** The question is matched against chunks with the ranking of hybrid search. A chunk is kept only if it matched the question's words or is similar enough in meaning; at most 6 chunks, two per document, 4000 characters in all (the best chunk is always kept whole). When `history` is sent, the question is first rewritten into one that stands alone, and that is used for retrieval and for the answer; the history itself goes only to the rewrite. When no chunk is kept, no model call is made and the stream says nothing was found. The answer is limited to 400 tokens. Each model call logs its model and token counts, never the text.
+
+| Response | When |
+|---|---|
+| `200` | A stream (an `error` event can still end it) |
+| `409` | `{"detail": {"reason": "chat_unavailable"}}`: no Google API key |
+| `404` | `{"detail": {"reason": "session_not_found"}}`: the `session_id` does not exist (nothing is streamed or stored) |
+| `422` | Blank or too long `question`, more than 6 history messages, an unknown role, a `session_id` that is not a UUID, or an invalid filter |
+
+## Chat sessions
+
+A session keeps a conversation: its title and every question and answer. There are no accounts, so every client with the API key sees every session.
+
+| Call | Does |
+|---|---|
+| `POST /api/v1/chat/sessions` | Create a session. Optional body `{"title": "..."}`; the default is `New chat`. `201` with the session |
+| `GET /api/v1/chat/sessions?limit=50&offset=0` | List, most recently used first. `limit` 1 to 100. `{"items": [...], "total": n}` |
+| `GET /api/v1/chat/sessions/{id}` | The session with its `messages` in order |
+| `PATCH /api/v1/chat/sessions/{id}` | Rename: `{"title": "..."}`, trimmed, 1 to 100 characters. Does not change the order of the list |
+| `DELETE /api/v1/chat/sessions/{id}` | Delete the session and its messages. `204` |
+
+A session is `{"id", "title", "created_at", "updated_at", "message_count"}`. `updated_at` moves when a message is saved, not when the session is renamed.
+
+A message is `{"id", "role", "content", "created_at", ...}`. An assistant message also has `sources` (as sent in the stream, kept even if a document is later deleted), `citations`, `suggestions`, `rewritten_question` (or `null`) and `status`: `done`, `stopped` (the client closed the stream; the text so far is kept, nothing is saved if there was none) or `failed` (the model failed; the text so far is kept). A session still called `New chat` takes its title from the first question (first 60 characters).
+
+Saving happens through [`POST /api/v1/chat`](#chat) with `session_id`. A save that fails is logged and does not change the events.
+
+| Response | When |
+|---|---|
+| `404` | `{"detail": {"reason": "session_not_found"}}` |
+| `422` | A title that is blank or longer than 100 characters, an id that is not a UUID, a `limit` outside 1 to 100 |
 
 ## Get a document
 

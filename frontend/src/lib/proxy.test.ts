@@ -17,6 +17,7 @@ describe("upstreamPath", () => {
     [["documents"], "/api/v1/documents"],
     [["documents", "abc", "invoices", "0"], "/api/v1/documents/abc/invoices/0"],
     [["search"], "/api/v1/search"],
+    [["chat"], "/api/v1/chat"],
     [["jobs", "retry-failed"], "/api/v1/jobs/retry-failed"],
     [["readyz"], "/readyz"],
   ])("allows %j", (segments, expected) => {
@@ -124,6 +125,34 @@ describe("forward", () => {
     expect(fetchFn).not.toHaveBeenCalled();
   });
 
+  it("forwards DELETE for a chat session with the key", async () => {
+    const id = "3f2a1c9e-1b2d-4c3e-8f4a-5b6c7d8e9f01";
+    const fetchFn = upstreamReturning(new Response(null, { status: 204 }));
+
+    const res = await forward(new Request("http://web/x", { method: "DELETE" }), ["chat", "sessions", id], ENV, fetchFn);
+
+    expect(res.status).toBe(204);
+    expect(fetchFn.mock.calls[0][0]).toBe(`http://api:8000/api/v1/chat/sessions/${id}`);
+    expect(fetchFn.mock.calls[0][1]?.method).toBe("DELETE");
+    expect(sentHeaders(fetchFn).get("x-api-key")).toBe("s3cret");
+  });
+
+  it.each([
+    [["chat", "sessions"]],
+    [["chat"]],
+    [["chat", "sessions", "not-a-uuid"]],
+    [["chat", "sessions", "3f2a1c9e-1b2d-4c3e-8f4a-5b6c7d8e9f01", "extra"]],
+    [["documents", "3f2a1c9e-1b2d-4c3e-8f4a-5b6c7d8e9f01"]],
+    [["chat", "sessions", ".."]],
+  ])("does not forward DELETE for %j", async (segments) => {
+    const fetchFn = upstreamReturning(Response.json({}));
+
+    const res = await forward(new Request("http://web/x", { method: "DELETE" }), segments, ENV, fetchFn);
+
+    expect(res.status).toBe(404);
+    expect(fetchFn).not.toHaveBeenCalled();
+  });
+
   it("returns only the content type from the API's headers", async () => {
     const fetchFn = upstreamReturning(
       new Response("{}", { headers: { "content-type": "application/json", "set-cookie": "a=b", "x-secret": "1" } }),
@@ -195,5 +224,59 @@ describe("forwardFile", () => {
     const missing = await forwardFile(new Request("http://web/x"), ID, ENV, twoStep(new Response("", { status: 403 })));
 
     expect([unknown.status, apiDown.status, storageDown.status, missing.status]).toEqual([404, 502, 502, 502]);
+  });
+});
+
+describe("forward: chat", () => {
+  it("forwards a question with the key", async () => {
+    const fetchFn = upstreamReturning(new Response("event: done\ndata: {}\n\n", { headers: { "content-type": "text/event-stream" } }));
+
+    await forward(
+      new Request("http://web/api/backend/chat?currency=SEK", { method: "POST", body: JSON.stringify({ question: "hi" }) }),
+      ["chat"],
+      ENV,
+      fetchFn,
+    );
+
+    expect(fetchFn.mock.calls[0][0]).toBe("http://api:8000/api/v1/chat?currency=SEK");
+    expect(fetchFn.mock.calls[0][1]?.method).toBe("POST");
+    expect(sentHeaders(fetchFn).get("x-api-key")).toBe("s3cret");
+  });
+
+  it("marks an event stream as not to be buffered, and no other response", async () => {
+    const stream = await forward(
+      new Request("http://web/x", { method: "POST", body: "{}" }),
+      ["chat"],
+      ENV,
+      upstreamReturning(new Response("x", { headers: { "content-type": "text/event-stream" } })),
+    );
+    const json = await forward(new Request("http://web/x"), ["documents"], ENV, upstreamReturning(Response.json({})));
+
+    expect(stream.headers.get("cache-control")).toBe("no-cache, no-transform");
+    expect(stream.headers.get("x-accel-buffering")).toBe("no");
+    expect(json.headers.get("x-accel-buffering")).toBeNull();
+  });
+
+  it("hands the first event over before the upstream has ended", async () => {
+    let finish!: () => void;
+    const upstream = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(new TextEncoder().encode("event: sources\ndata: {}\n\n"));
+        finish = () => controller.close();
+      },
+    });
+
+    const res = await forward(
+      new Request("http://web/x", { method: "POST", body: "{}" }),
+      ["chat"],
+      ENV,
+      upstreamReturning(new Response(upstream, { headers: { "content-type": "text/event-stream" } })),
+    );
+    const reader = res.body!.getReader();
+    const first = await reader.read(); // the upstream is still open here
+
+    expect(new TextDecoder().decode(first.value)).toContain("event: sources");
+    finish();
+    expect((await reader.read()).done).toBe(true);
   });
 });

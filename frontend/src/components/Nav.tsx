@@ -10,6 +10,7 @@ const LINKS = [
   { href: "/upload", label: "Upload" },
   { href: "/review", label: "Review" },
   { href: "/search", label: "Search" },
+  { href: "/chat", label: "Chat" },
 ];
 
 export function Nav() {

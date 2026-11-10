@@ -22,9 +22,29 @@ The evaluation in `eval/` (see [eval/README.md](../eval/README.md)) has its own 
 | Findings marked on fields, correction form (dirty fields only, 422 at the field, 409 busy, clearing a value, line items) | `components/InvoiceCard.test.tsx`, `lib/invoiceForm.test.ts` |
 | Reprocess and retry-all | `components/ReprocessButton.test.tsx`, `components/ReviewView.test.tsx` |
 | Search: modes, fallback notice, semantic unavailable, blank query, filters; safe snippet rendering | `components/SearchView.test.tsx`, `components/Snippet.test.tsx`, `lib/snippet.test.ts` |
+| Chat: the stream reader (events split anywhere, multi-byte text, abort, 409), citation chips (known, unknown, markup as text), sources before text, Stop, blank question, follow-up in the same session, filters, each failure message, nothing found; the proxy passes a stream through unbuffered and forwards DELETE only for a chat session; the Chat nav link | `lib/chatStream.test.ts`, `lib/citations.test.ts`, `components/AnswerText.test.tsx`, `components/ChatView.test.tsx`, `lib/proxy.test.ts`, `components/Nav.test.tsx` |
+| Chat sessions (page): stored messages as turns (stopped, failed, no answer), the sessions client, the list (order, open, new, empty, load error, rename with Enter/Escape/blank/unchanged/failure, delete with confirmation), first question creates a session and sets the address, reload restores answers with chips and sources, continue, switching stops a stream, unknown session | `lib/chatSessions.test.ts`, `components/SessionList.test.tsx`, `components/ChatPage.test.tsx`, `components/ChatView.test.tsx` |
 | UI components | `components/ui/ui.test.tsx` |
 
 `make e2e` runs one Playwright journey against the running stack (`e2e/journey.spec.ts`): upload a CSV, see it processed, open it, find it by keyword search. It runs without a Google API key. Correcting a value needs an extracted invoice, which needs the model, so that path is covered by the component tests above and by the manual run with a real key in [frontend.md](frontend.md#manual-test-from-the-browser).
+
+## Chat (backend)
+
+The chat tests use a fake chat model (`tests/fake_chat.py`) and the fake embedder, so no model is called:
+
+| Area | Covered by |
+|---|---|
+| Which chunks the model reads: relevance, word match, 6 chunks, two per document, 4000 characters, the best chunk kept whole | `tests/unit/test_chat_service.py` |
+| Splitting the follow-up questions from a stream (delimiter in one piece, split over pieces, absent, bullets, more than three) | `tests/unit/test_chat_service.py` |
+| Events: order, sources before the model is asked, quotes, unknown markers, nothing found makes no model call, failures (provider limit, model failure, failure after some text) | `tests/unit/test_chat_service.py` |
+| Prompts: data-not-instructions rule, delimiter, instructions first and identical, chunks in numbered tags, a chunk cannot close its tag, history only in the rewrite call, output limit | `tests/unit/test_chat_llm.py` |
+| Token logging: model, tokens, chunk and character counts, and no question, document text or answer in any log entry | `tests/unit/test_chat_llm.py` |
+| Retrieval of chunks and the rewrite (none without history, fallback on failure) against PostgreSQL | `tests/integration/test_search_service.py`, `tests/integration/test_chat_service.py` |
+| The endpoint: the event stream, filters, 422 cases, 409 without a model, 401 without the key | `tests/integration/test_chat_api.py`, `tests/integration/test_auth.py` |
+| Sessions: create, list order and counts, read, rename (keeps order; blank and long titles refused), delete cascades, 404, paging, the key required | `tests/integration/test_chat_sessions_service.py`, `tests/integration/test_chat_sessions_api.py` |
+| Saving through chat: question and answer saved with sources, citations and follow-ups; model failure kept as failed; a closed stream kept as stopped (nothing saved without text); unknown session 404 and nothing stored; no session stores nothing; the rewrite reads stored messages and ignores the body; a failed save leaves the events unchanged; the auto title once, never over a rename; history skips failed and unanswered questions | `tests/integration/test_chat_saving.py`, `tests/integration/test_chat_sessions_service.py` |
+
+What is not tested: whether the real model follows the prompt (cites correctly, stays within the sources, ends with the delimiter) and whether a cited source supports its claim. That needs the real model and is not measured; see the README.
 
 ## Phase 1 coverage: file types and failures
 

@@ -10,6 +10,7 @@ export const REASONS: Record<string, string> = {
   no_text: "This document has no readable text to extract from.",
   queue_unavailable: "The job queue is not available right now. Try again shortly.",
   semantic_unavailable: "Semantic search needs a configured Google API key.",
+  chat_unavailable: "Chat needs a configured Google API key.",
   not_extracted: "That document has not been extracted yet.",
   empty_file: "The file is empty.",
   file_too_large: "The file is larger than the upload limit.",

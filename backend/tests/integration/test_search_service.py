@@ -5,7 +5,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import DocumentStatus
 from app.services.listing import DocumentFilters
-from app.services.search import Mode, SearchOutcome, SemanticUnavailable, search
+from app.services.search import (
+    Mode,
+    SearchOutcome,
+    SemanticUnavailable,
+    retrieve_chunks,
+    search,
+)
 from tests.fake_embedder import FakeEmbedder
 from tests.search_samples import indexed
 
@@ -165,3 +171,58 @@ async def test_the_limit_and_filters_apply_to_semantic_search_too(session: Async
 
     assert len(limited.results) == 2
     assert names(filtered) == ["d0.pdf"]
+
+
+# --- chunks for chat ----------------------------------------------------------------------
+
+
+async def test_retrieved_chunks_carry_their_text_and_how_they_were_found(
+    session: AsyncSession,
+) -> None:
+    await indexed(session, "Cover page", "Acme Industries invoice, hosting", name="acme.pdf")
+
+    chunks = await retrieve_chunks(session, "acme hosting", NO_FILTERS, FakeEmbedder())
+
+    best = chunks[0]
+    assert best.filename == "acme.pdf" and best.page_no == 2
+    assert best.text == "Acme Industries invoice, hosting"
+    assert best.word_match is True
+    assert best.similarity is not None and best.similarity > 0
+
+
+async def test_a_chunk_found_only_by_meaning_has_no_word_match(session: AsyncSession) -> None:
+    await indexed(session, "delivery is scheduled for Monday", name="ship.pdf")
+
+    # "shipping" and "delivery" are the same thing to the fake embedder, but share no word
+    (chunk,) = await retrieve_chunks(session, "shipping", NO_FILTERS, FakeEmbedder())
+
+    assert chunk.word_match is False
+    assert chunk.similarity is not None and chunk.similarity > 0.4
+
+
+async def test_retrieved_chunks_follow_the_filters(session: AsyncSession) -> None:
+    await indexed(session, "an invoice", name="done.pdf", status=DocumentStatus.COMPLETED)
+    await indexed(session, "an invoice", name="review.pdf", status=DocumentStatus.NEEDS_REVIEW)
+
+    chunks = await retrieve_chunks(
+        session, "invoice", DocumentFilters(status="NEEDS_REVIEW"), FakeEmbedder()
+    )
+
+    assert {c.filename for c in chunks} == {"review.pdf"}
+
+
+async def test_without_an_embedder_chunks_come_from_keyword_search(session: AsyncSession) -> None:
+    await indexed(session, "Acme Industries invoice", name="acme.pdf")
+
+    chunks = await retrieve_chunks(session, "acme", NO_FILTERS, None)
+
+    assert [c.filename for c in chunks] == ["acme.pdf"]
+    assert chunks[0].word_match is True and chunks[0].similarity is None
+
+
+async def test_no_chunk_when_nothing_matches_and_nothing_is_embedded(
+    session: AsyncSession,
+) -> None:
+    await indexed(session, "Acme Industries invoice", embedded=False)
+
+    assert await retrieve_chunks(session, "zebra", NO_FILTERS, FakeEmbedder()) == []

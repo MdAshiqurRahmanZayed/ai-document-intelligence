@@ -22,7 +22,7 @@ flowchart LR
 
 ## Entities that exist now
 
-Migrations `0001` (documents, pages, processing events), `0002` (extractions, validation errors, cross-checks) and `0003` (corrections, chunks).
+Migrations `0001` (documents, pages, processing events), `0002` (extractions, validation errors, cross-checks), `0003` (corrections, chunks) and `0004` (chat sessions and messages).
 
 ```mermaid
 erDiagram
@@ -35,6 +35,7 @@ erDiagram
     documents ||--o{ corrections : "audit trail"
     extractions ||--o{ corrections : "version holding the new value"
     documents ||--o{ chunks : "searchable text"
+    chat_sessions ||--o{ chat_messages : "has messages"
 
     documents {
         uuid id PK
@@ -138,6 +139,26 @@ erDiagram
         vector embedding "768 dimensions, nullable, HNSW index"
         timestamptz created_at
     }
+
+    chat_sessions {
+        uuid id PK
+        varchar title "100 characters, first question until renamed"
+        timestamptz created_at
+        timestamptz updated_at "moved by saved messages, not by a rename"
+    }
+
+    chat_messages {
+        bigint id PK
+        uuid session_id FK "cascade delete"
+        varchar role "user assistant"
+        text content "question or answer"
+        jsonb sources "assistant only: n, document_id, filename, page_no, quote as sent"
+        jsonb citations "assistant only: source numbers the answer cites"
+        jsonb suggestions "assistant only: follow-up questions"
+        text rewritten_question "nullable"
+        varchar status "assistant only: done stopped failed"
+        timestamptz created_at
+    }
 ```
 
 Constraints and indexes:
@@ -151,6 +172,8 @@ Constraints and indexes:
 | `validation_errors` | primary key `id`; foreign keys `document_id` and `extraction_id` with cascade delete, `related_document_id` set null on delete |
 | `corrections` | primary key `id`; foreign keys `document_id` and `extraction_id` with cascade delete; index `(document_id, created_at)` |
 | `chunks` | primary key `id`; foreign key `document_id` with cascade delete; unique `(document_id, page_no, chunk_no)`; index `document_id`; GIN index on `tsv`; HNSW index on `embedding` with `vector_cosine_ops` |
+| `chat_sessions` | primary key `id` |
+| `chat_messages` | primary key `id`; foreign key `session_id` with cascade delete; index `(session_id, id)` |
 | `cross_checks` | primary key `id`; foreign keys `left_document_id` and `right_document_id` with cascade delete, `left_extraction_id` and `right_extraction_id` set null on delete; index `(left_document_id, right_document_id)` |
 
 Rules worth knowing:

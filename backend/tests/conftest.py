@@ -60,7 +60,10 @@ async def _truncate(url: str) -> None:
     try:
         async with engine.begin() as conn:
             await conn.execute(
-                text("TRUNCATE documents, pages, processing_events RESTART IDENTITY CASCADE")
+                text(
+                    "TRUNCATE documents, pages, processing_events, chat_sessions "
+                    "RESTART IDENTITY CASCADE"
+                )
             )
     finally:
         await engine.dispose()
